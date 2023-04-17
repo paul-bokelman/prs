@@ -1,0 +1,51 @@
+{
+  "name": "interface",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/interface/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/interface",
+        "format": ["cjs"],
+        "main": "apps/interface/src/main.ts",
+        "tsConfig": "apps/interface/tsconfig.app.json",
+        "assets": ["apps/interface/src/assets"],
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
+      },
+      "configurations": {
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false
+          }
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/js:node",
+      "options": {
+        "buildTarget": "interface:build"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "interface:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/interface/**/*.ts"]
+      }
+    }
+  },
+  "tags": []
+}

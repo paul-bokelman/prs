@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "outDir": "../../dist/out-tsc",
+    "declaration": true,
+    "types": ["node"],
+    "strict": true,
+    "strictNullChecks": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/server/*": ["../../apps/server/src/*"],
+      "@/server": ["../../apps/server/src"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}
