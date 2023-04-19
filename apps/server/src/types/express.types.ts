@@ -1,4 +1,4 @@
-import type { AuthenticatedUser } from "~/types";
+import type { AuthenticatedUser } from '@prs/common';
 
 interface AuthenticatedRequestPayload {
   user: AuthenticatedUser;

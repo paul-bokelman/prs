@@ -15,8 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@/prs/types": ["libs/types/src"],
-      "@/prs/types/*": ["libs/types/src/*"]
+      "@prs/common": ["libs/common/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

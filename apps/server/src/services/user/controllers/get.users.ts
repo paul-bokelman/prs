@@ -1,13 +1,7 @@
-import type { User } from "@prisma/client";
-import type { Controller } from "~/types";
-import { StatusCodes } from "http-status-codes";
-import { formatResponse, handleControllerError } from "~/lib/utils";
-import { prisma } from "~/config";
-
-interface GetUsers {
-  args: undefined;
-  payload: Array<Pick<User, "id" | "name" | "points">>;
-}
+import type { Controller, GetUsers } from '@prs/common';
+import { StatusCodes } from 'http-status-codes';
+import { prisma } from '../../../config';
+import { formatResponse, handleControllerError } from '../../../lib/utils';
 
 const handler: Controller<GetUsers> = async (_, res) => {
   const { success } = formatResponse<GetUsers>(res);

@@ -5,17 +5,11 @@
   "references": [
     {
       "path": "./tsconfig.app.json"
-    },
+    }
   ],
   "compilerOptions": {
     "esModuleInterop": true,
     "strict": true,
-    "strictNullChecks": true,
-    "baseUrl": "./src",
-    "paths": {
-      "~/*": ["*"],
-      "@/prs/*": ["../../../libs/types/src/*"],
-      "@/prs": ["../../../libs/types/src"]
-    }
+    "strictNullChecks": true
   }
 }

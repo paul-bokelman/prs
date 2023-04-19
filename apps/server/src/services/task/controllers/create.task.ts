@@ -1,26 +1,8 @@
-import type { Task } from "@prisma/client";
-import type { Controller } from "~/types";
-import { StatusCodes } from "http-status-codes";
-import z from "zod";
-import { formatResponse, handleControllerError } from "~/lib/utils";
-import { prisma } from "~/config";
-
-interface CreateTask {
-  args: z.infer<typeof schema>;
-  payload: Task;
-}
-
-const schema = z.object({
-  body: z.object({
-    title: z.string(),
-    description: z.string(),
-    points: z.number(),
-    priority: z
-      .number()
-      .refine((n) => n >= 0 && n <= 10, "Priority must be from 0 to 10")
-      .optional(),
-  }),
-});
+import type { Controller, CreateTask } from '@prs/common';
+import { StatusCodes } from 'http-status-codes';
+import { createTaskValidation } from '@prs/common';
+import { prisma } from '../../../config';
+import { formatResponse, handleControllerError } from '../../../lib/utils';
 
 const handler: Controller<CreateTask> = async (req, res) => {
   const { success } = formatResponse<CreateTask>(res);
@@ -32,4 +14,4 @@ const handler: Controller<CreateTask> = async (req, res) => {
   }
 };
 
-export const createTask = { handler, schema };
+export const createTask = { handler, schema: createTaskValidation };

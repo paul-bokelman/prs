@@ -1,25 +1,8 @@
-import type { User } from "@prisma/client";
-import type { Controller } from "~/types";
-import { StatusCodes } from "http-status-codes";
-import z from "zod";
-import { formatResponse, handleControllerError } from "~/lib/utils";
-import { prisma } from "~/config";
-
-interface UpdateUser {
-  args: z.infer<typeof schema>;
-  payload: User;
-}
-
-const schema = z.object({
-  body: z.object({
-    name: z.string().optional(),
-    pin: z
-      .number()
-      .refine((n) => n.toString().length === 4, "PIN must be 4 digits")
-      .optional(),
-    points: z.number().optional(),
-  }),
-});
+import type { Controller, UpdateUser } from '@prs/common';
+import { StatusCodes } from 'http-status-codes';
+import { updateUserValidation } from '@prs/common';
+import { prisma } from '../../../config';
+import { formatResponse, handleControllerError } from '../../../lib/utils';
 
 const handler: Controller<UpdateUser> = async (req, res) => {
   const { success } = formatResponse<UpdateUser>(res);
@@ -32,4 +15,4 @@ const handler: Controller<UpdateUser> = async (req, res) => {
   }
 };
 
-export const updateUser = { handler, schema };
+export const updateUser = { handler, schema: updateUserValidation };

@@ -1,12 +1,7 @@
-import type { Controller } from "~/types";
-import { StatusCodes } from "http-status-codes";
-import { formatResponse, handleControllerError } from "~/lib/utils";
-import { prisma } from "~/config";
-
-interface DeleteUser {
-  args: undefined;
-  payload: undefined;
-}
+import type { Controller, DeleteUser } from '@prs/common';
+import { StatusCodes } from 'http-status-codes';
+import { prisma } from '../../../config';
+import { formatResponse, handleControllerError } from '../../../lib/utils';
 
 const handler: Controller<DeleteUser> = async (req, res) => {
   const { success } = formatResponse<DeleteUser>(res);

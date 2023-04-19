@@ -1,11 +1,11 @@
-import type { RequestHandler } from "express";
-import { StatusCodes } from "http-status-codes";
-import { type AnyZodObject, ZodError } from "zod";
-import { formatResponse } from "~/lib/utils";
+import type { RequestHandler } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import { type AnyZodObject, ZodError } from 'zod';
+import { formatResponse } from '../lib/utils';
 
 const formatPath = (path: (string | number)[]) => {
   const withoutDiscriminator = path.shift();
-  return path.length ? path.join(".") : withoutDiscriminator;
+  return path.length ? path.join('.') : withoutDiscriminator;
 };
 
 export const validate = (schema: AnyZodObject): RequestHandler => {
@@ -18,12 +18,12 @@ export const validate = (schema: AnyZodObject): RequestHandler => {
       if (e instanceof ZodError) {
         return error(
           StatusCodes.BAD_REQUEST,
-          "Validation Error",
+          'Validation Error',
           e.errors.map((e) => ({ path: formatPath(e.path), message: e.message }))
         );
       }
 
-      return error(StatusCodes.INTERNAL_SERVER_ERROR, "Validation Error");
+      return error(StatusCodes.INTERNAL_SERVER_ERROR, 'Validation Error');
     }
   };
 };

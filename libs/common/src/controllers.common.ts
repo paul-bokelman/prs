@@ -1,14 +1,16 @@
-import type { ReasonPhrases } from "http-status-codes";
-import type { RequestHandler } from "express";
+import type { ReasonPhrases } from 'http-status-codes';
+import type { RequestHandler } from 'express';
+
+// basically just here for server error...
 
 export type Controller<C extends ControllerConfig> = RequestHandler<
-  PossiblyUndefined<C["args"], "params">,
-  C["payload"] | ServerError,
-  PossiblyUndefined<C["args"], "body">,
-  PossiblyUndefined<C["args"], "query">
+  PossiblyUndefined<C['args'], 'params'>,
+  C['payload'] | ServerError,
+  PossiblyUndefined<C['args'], 'body'>,
+  PossiblyUndefined<C['args'], 'query'>
 >;
 
-type PossiblyUndefined<A extends ControllerConfig["args"], K> = A extends undefined
+type PossiblyUndefined<A extends ControllerConfig['args'], K> = A extends undefined
   ? unknown
   : K extends keyof A
   ? A[K]
@@ -25,9 +27,9 @@ export interface ControllerConfig {
   payload: Record<string, unknown> | Record<string, unknown>[] | undefined;
 }
 
-export type ServerError = {
+export interface ServerError {
   code: number;
   reason: ReasonPhrases;
   message?: string;
   errors?: unknown;
-};
+}

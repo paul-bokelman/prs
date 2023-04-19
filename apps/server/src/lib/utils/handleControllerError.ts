@@ -1,8 +1,8 @@
-import type { Response } from "express";
-import type { ServerError } from "~/types";
-import { Prisma } from "@prisma/client";
-import { StatusCodes } from "http-status-codes";
-import { formatResponse } from "~/lib/utils";
+import type { Response } from 'express';
+import type { ServerError } from '@prs/common';
+import { Prisma } from '@prisma/client';
+import { StatusCodes } from 'http-status-codes';
+import { formatResponse } from '../../lib/utils';
 
 export const handleControllerError = (e: unknown, res: Response<ServerError>) => {
   const { error } = formatResponse(res);
