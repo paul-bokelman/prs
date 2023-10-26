@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { GetTasks, ServerError, UpdateTask, DeleteTask } from "prs-types";
+import type { GetDay, ServerError, UpdateTask, DeleteTask } from "prs-types";
 import cn from "clsx";
 import { useMutation } from "react-query";
 import { TaskMode } from "@/types";
@@ -10,7 +10,7 @@ import { api, qc } from "@/lib/api";
 import { sfx } from "@/lib/sfx";
 // import { socket } from "@/lib/socket";
 
-type Props = GetTasks["payload"][number] & {
+type Props = GetDay["payload"]["tasks"][number] & {
   selected?: boolean;
   mode: TaskMode;
 };
@@ -20,7 +20,7 @@ export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
   const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false);
   const [onHover, setOnHover] = useState<boolean>(false);
 
-  const { id, title, due, complete } = task;
+  const { id, description, complete } = task;
 
   const { mutate: updateTaskMutation } = useMutation<
     UpdateTask["payload"],
@@ -29,7 +29,7 @@ export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
   >({
     mutationFn: ({ id, data }) => api.tasks.update(id, data),
     onSuccess: () => {
-      qc.invalidateQueries("tasks");
+      qc.invalidateQueries("currentDay");
     },
     onError: () => {
       toast({ title: "Failed to update task", variant: "destructive" });
@@ -39,7 +39,7 @@ export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
   const { mutate: deleteTaskMutation } = useMutation<DeleteTask["payload"], ServerError, string>({
     mutationFn: (id) => api.tasks.delete(id),
     onSuccess: () => {
-      qc.invalidateQueries("tasks");
+      qc.invalidateQueries("currentDay");
     },
     onError: () => {
       toast({ title: "Failed to delete task", variant: "destructive" });
@@ -88,10 +88,10 @@ export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
         <div className="grid grid-cols-2 items-center">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="scroll-m-20 text-lg font-semibold tracking-tight">{title}</h3>
+              <h3 className="scroll-m-20 text-lg font-semibold tracking-tight">{description}</h3>
             </div>
             <p className="leading-7 text-muted-foreground text-xs">
-              {new Date(due!).toDateString()} •{" "}
+              {new Date().toDateString()} •{" "}
               <span className={cn({ "text-green-500/80": complete, "text-orange-500/80": !complete })}>
                 {complete ? "Complete" : "Incomplete"}
               </span>
@@ -112,8 +112,8 @@ export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
       <EditTaskDialog
         open={editDialogOpen}
         close={closeEditDialog}
-        taskTitle={title}
-        updateTask={(title: string) => updateTaskMutation({ id, data: { title } })}
+        taskDescription={description}
+        updateTask={(description: string) => updateTaskMutation({ id, data: { description } })}
       />
     </>
   );

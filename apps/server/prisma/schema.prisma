@@ -8,16 +8,25 @@ datasource db {
 }
 
 model Task {
-  id          String    @id @default(cuid())
-  complete    Boolean   @default(false)
-  title       String
-  reoccurring Boolean   @default(false)
-  due         DateTime?
-  order       Int       @default(0) // should be unique and auto increment
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id          String   @id @default(cuid())
+  description String
+  complete    Boolean  @default(false)
+  reoccurring Boolean  @default(false) // how should this be handled? seperated from day?
+  dayId       String
+  day         Day?     @relation(fields: [dayId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Day {
+  id        String   @id @default(cuid())
+  date      DateTime @unique @default(now())
+  tasks     Task[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // there should be a day model that has a one to many relationship with tasks to 
 // easily get all tasks for a day and have relative index ordering
+
 // model Day {}
