@@ -18,7 +18,8 @@ export const withContext: WebsocketRequestHandler = async (ws: ExtWebSocket, req
   const date = dayjs(dayjs().format("YYYY-MM-DD"));
   const startOfDay = date.startOf("day").toDate();
   const endOfDay = date.endOf("day").toDate();
-  const maxIndex = (await prisma.task.count({ where: { due: { gte: startOfDay, lte: endOfDay } } })) - 1;
+  let maxIndex = await prisma.task.count({ where: { day: { date: { gte: startOfDay, lte: endOfDay } } } });
+  maxIndex = maxIndex === 0 ? maxIndex : maxIndex - 1;
 
   if (currentContext.maxIndex !== maxIndex) currentContext.maxIndex = maxIndex;
 

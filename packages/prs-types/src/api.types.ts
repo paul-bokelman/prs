@@ -1,4 +1,13 @@
-import type { Task } from "@prisma/client";
+import type { Day, Task } from "@prisma/client";
+
+/* ---------------------------------- DAYS ---------------------------------- */
+
+export interface GetDay {
+  params: {};
+  body: {};
+  query: { date: string };
+  payload: Day & { tasks: Array<Task> };
+}
 
 /* ---------------------------------- TASKS --------------------------------- */
 
@@ -7,14 +16,7 @@ export interface GetTask {
   params: { id: string };
   body: {};
   query: {};
-  payload: Task;
-}
-
-export interface GetTasks {
-  params: {};
-  body: {};
-  query: { date: string };
-  payload: Array<Task>;
+  payload: Task & { day: Day };
 }
 
 export interface UpdateTask {
@@ -28,12 +30,12 @@ export interface DeleteTask {
   params: { id: string };
   body: {};
   query: {};
-  payload: Task;
+  payload: Task & { day: Day };
 }
 
 export interface CreateTask {
   params: {};
-  body: Omit<Task, "id" | "createdAt" | "updatedAt">;
+  body: Pick<Task, "description" | "reoccurring" | "complete"> & { day: { id: string } | string }; // string is date
   query: {};
-  payload: Task;
+  payload: Task & { day: Day };
 }

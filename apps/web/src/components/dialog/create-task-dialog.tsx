@@ -22,6 +22,7 @@ import {
 } from "@/components/ui";
 import { api, qc } from "@/lib/api";
 import { sfx } from "@/lib/sfx";
+import dayjs from "dayjs";
 
 interface Props {
   open: boolean;
@@ -29,10 +30,8 @@ interface Props {
 }
 
 const formSchema = z.object({
-  title: z.string().max(50, "Too long").min(3, "Too short"),
-  due: z.date().nullable(),
+  description: z.string().max(50, "Too long").min(3, "Too short"),
   complete: z.boolean().default(false),
-  order: z.number().default(0),
   reoccurring: z.boolean().default(false),
 });
 
@@ -42,7 +41,7 @@ export const CreateTaskDialog: React.FC<Props> = ({ open, close }) => {
   const createTask = useMutation<CreateTask["payload"], ServerError, { data: CreateTask["body"] }>({
     mutationFn: ({ data }) => api.tasks.create(data),
     onSuccess: () => {
-      qc.invalidateQueries("tasks");
+      qc.invalidateQueries("currentDay");
       sfx.success.play();
     },
     onError: () => {
@@ -53,16 +52,14 @@ export const CreateTaskDialog: React.FC<Props> = ({ open, close }) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      due: new Date(),
+      description: "",
       complete: false,
-      order: 0,
       reoccurring: false,
     },
   });
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
-    createTask.mutate({ data });
+    createTask.mutate({ data: { day: dayjs().format("YYYY-MM-DD"), ...data } });
     close();
   };
 
@@ -85,7 +82,7 @@ export const CreateTaskDialog: React.FC<Props> = ({ open, close }) => {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <FormField
                 control={form.control}
-                name="title"
+                name="description"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Task Title</FormLabel>

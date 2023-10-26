@@ -12,6 +12,12 @@ export const getContext = async (): Promise<PRSContext> => {
   return JSON.parse(context) as PRSContext;
 };
 
+export const updateContext = async (update: (ctx: PRSContext) => PRSContext) => {
+  const ctx = await getContext();
+  const updatedContext = update(ctx);
+  await setContext(updatedContext);
+};
+
 export const destroyContext = async () => {
   if (!fs.existsSync(CONTEXT_FILE)) return;
   await fs.promises.unlink(CONTEXT_FILE);
@@ -31,5 +37,6 @@ export const context = {
   init: initializeContext,
   set: setContext,
   get: getContext,
+  update: updateContext,
   destroy: destroyContext,
 };

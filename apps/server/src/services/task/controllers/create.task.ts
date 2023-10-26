@@ -1,23 +1,48 @@
 import type { Controller, CreateTask } from "prs-types";
 import { StatusCodes } from "http-status-codes";
-import { prisma } from "../../../config";
-import { formatResponse, handleControllerError } from "../../../lib/utils";
 import dayjs from "dayjs";
+import { prisma } from "../../../config";
+import { context } from "../../../lib";
+import { formatResponse, handleControllerError } from "../../../lib/utils";
 
 const handler: Controller<CreateTask> = async (req, res) => {
-  const { success } = formatResponse<CreateTask>(res);
+  const { success, error } = formatResponse<CreateTask>(res);
   try {
-    let { due, order, ...data } = req.body;
+    const { day, ...taskData } = req.body;
 
-    due = dayjs(due).endOf("day").add(-1, "minute").toDate();
+    // use day id to connect to day
+    if (typeof day === "object" && "id" in day) {
+      const dayId = day.id;
+      const existingDay = await prisma.day.findUnique({ where: { id: dayId } });
+      if (!existingDay) return error(StatusCodes.NOT_FOUND, "Day not found");
 
-    const newTask = await prisma.task.create({
-      data: { due, order: order ? order : await prisma.task.count(), ...data },
+      const task = await prisma.task.create({
+        data: { day: { connect: { id: dayId } }, ...taskData },
+        include: { day: true },
+      });
+      return success(StatusCodes.OK, task);
+    }
+
+    // use day date to connect or create day
+    const date = dayjs(day);
+    const existingDay = await prisma.day.findFirst({
+      where: { date: { lte: date.endOf("day").toDate(), gte: date.startOf("day").toDate() } },
     });
 
-    // check if current day, if so update context
+    if (!existingDay) {
+      const newDay = await prisma.day.create({ data: { date: date.toDate() } });
+      const task = await prisma.task.create({
+        data: { day: { connect: { id: newDay.id } }, ...taskData },
+        include: { day: true },
+      });
+      return success(StatusCodes.OK, task);
+    }
 
-    return success(StatusCodes.OK, newTask);
+    const task = await prisma.task.create({
+      data: { day: { connect: { id: existingDay.id } }, ...taskData },
+      include: { day: true },
+    });
+    return success(StatusCodes.OK, task);
   } catch (e) {
     return handleControllerError(e, res);
   }

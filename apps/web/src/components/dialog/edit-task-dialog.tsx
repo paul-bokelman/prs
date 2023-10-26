@@ -16,26 +16,31 @@ import { Loader } from "lucide-react";
 interface Props {
   open: boolean;
   close: () => void;
-  taskTitle: string;
-  updateTask: (taskTitle: string) => void;
+  taskDescription: string;
+  updateTask: (taskDescription: string) => void;
 }
 
-export const EditTaskDialog: React.FC<Props> = ({ taskTitle: initialTaskTitle, open, close, updateTask }) => {
+export const EditTaskDialog: React.FC<Props> = ({
+  taskDescription: initialTaskDescription,
+  open,
+  close,
+  updateTask,
+}) => {
   const { toast } = useToast();
-  const [taskTitle, setTaskTitle] = useState<string>(initialTaskTitle);
+  const [taskDescription, setTaskDescription] = useState<string>(initialTaskDescription);
   const loading = false;
 
-  const handleTaskTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTaskTitle(e.target.value);
+  const handleTaskDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTaskDescription(e.target.value);
   };
 
   const handleSubmit = () => {
-    if (!taskTitle || typeof taskTitle !== "string" || taskTitle === initialTaskTitle) {
+    if (!taskDescription || typeof taskDescription !== "string" || taskDescription === initialTaskDescription) {
       toast({ title: "Invalid Task Title", variant: "destructive" });
       return;
     }
 
-    updateTask(taskTitle);
+    updateTask(taskDescription);
     return close();
   };
 
@@ -50,10 +55,13 @@ export const EditTaskDialog: React.FC<Props> = ({ taskTitle: initialTaskTitle, o
           <Label htmlFor="name" className="text-left">
             Task Title
           </Label>
-          <Input id="name" value={taskTitle} onChange={handleTaskTitleChange} className="col-span-3" />
+          <Input id="name" value={taskDescription} onChange={handleTaskDescriptionChange} className="col-span-3" />
         </div>
         <DialogFooter>
-          <Button onClick={handleSubmit} disabled={!taskTitle || taskTitle === initialTaskTitle || loading}>
+          <Button
+            onClick={handleSubmit}
+            disabled={!taskDescription || taskDescription === initialTaskDescription || loading}
+          >
             {!loading ? (
               "Save Changes"
             ) : (

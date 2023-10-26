@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ControllerConfig, DeleteTask, GetTasks, UpdateTask, CreateTask } from "prs-types";
+import { ControllerConfig, GetDay, DeleteTask, UpdateTask, CreateTask } from "prs-types";
 import { QueryClient } from "react-query";
 // import dayjs from "dayjs";
 
@@ -14,14 +14,19 @@ const get = <C extends ControllerConfig>(url: string) => client.get<C["payload"]
 const post = <C extends ControllerConfig>(url: string, data?: C["body"]) =>
   client.post<C["payload"]>(url, data).then((r) => r.data);
 
-const getTasks = (date: string) => get<GetTasks>(`/tasks?date=${date}`);
+/* ---------------------------------- DAYS ---------------------------------- */
+const getDay = (date: string) => get<GetDay>(`/days?date=${date}`);
+
+/* ---------------------------------- TASKS --------------------------------- */
 const updateTask = (id: string, data: UpdateTask["body"]) => post<UpdateTask>(`/tasks/${id}/update`, data);
 const deleteTask = (id: string) => post<DeleteTask>(`/tasks/${id}/delete`);
 const createTask = (data: CreateTask["body"]) => post<CreateTask>(`/tasks/create`, data);
 
 export const api = {
+  days: {
+    get: getDay,
+  },
   tasks: {
-    getMany: getTasks,
     update: updateTask,
     delete: deleteTask,
     create: createTask,

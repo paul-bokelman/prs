@@ -19,9 +19,9 @@ const App: React.FC<Props> = () => {
   const [taskMode, setTaskMode] = useState<TaskMode>(TaskMode.DEFAULT);
   const [createDialogOpen, setCreateDialogOpen] = useState<boolean>(false);
 
-  console.log(currentTaskIndex);
+  const { data: day, status } = useQuery("currentDay", () => api.days.get(dayjs().format("YYYY-MM-DD")));
 
-  const { data: tasks, status } = useQuery("tasks", () => api.tasks.getMany(dayjs().format("YYYY-MM-DD")));
+  console.log(day);
 
   const changeTaskMode = (mode: string) => {
     const currentMode = TaskMode[mode.toUpperCase() as keyof typeof TaskMode];
@@ -38,10 +38,10 @@ const App: React.FC<Props> = () => {
   };
 
   useEffect(() => {
-    if (online && tasks?.length) {
-      setCurrentTaskId(tasks[currentTaskIndex].id);
+    if (online && day?.tasks?.length) {
+      setCurrentTaskId(day.tasks[currentTaskIndex].id);
     }
-  }, [online, currentTaskIndex, tasks, setCurrentTaskId]);
+  }, [online, currentTaskIndex, day?.tasks, setCurrentTaskId]);
 
   const testWS = (direction: "left" | "right") => {
     ws.send(JSON.stringify(["moveIndex", { direction: direction }]));
@@ -78,7 +78,7 @@ const App: React.FC<Props> = () => {
             </Tabs>
           </div>
           <div className="flex items-center gap-2">
-            {tasks.map((task, i) => (
+            {day.tasks.map((task, i) => (
               <span
                 key={i}
                 className={cn(
@@ -86,21 +86,15 @@ const App: React.FC<Props> = () => {
                   "flex items-center gap-1 text-xs"
                 )}
               >
-                {task.title} {tasks.length > i + 1 && <ArrowRight size={12} />}
+                {task.description} {day.tasks.length > i + 1 && <ArrowRight size={12} />}
               </span>
             ))}
           </div>
-          {!tasks.length && <span>No tasks</span>}
+          {!day.tasks.length && <span>No tasks</span>}
           <div className="grid grid-cols-3">
-            {tasks
-              // .sort((t1, t2) => {
-              //   if (t1.complete) return 1;
-              //   if (t2.complete) return -1;
-              //   return 0;
-              // })
-              .map((task, i) => (
-                <Task key={i} {...task} selected={online && currentTaskId === task.id} mode={taskMode} />
-              ))}
+            {day.tasks.map((task, i) => (
+              <Task key={i} {...task} selected={online && currentTaskId === task.id} mode={taskMode} />
+            ))}
           </div>
         </div>
         <div className="absolute bottom-20 left-20 flex items-center gap-6">

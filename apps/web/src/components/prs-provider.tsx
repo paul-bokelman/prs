@@ -56,7 +56,7 @@ export function PRSProvider({ children, ...props }: PRSProviderProps) {
   const confirmedEvent: ConfirmedEvent = ({ taskId }) => {
     // ideally use setQuery then invalidateQueries
     sfx.complete().play();
-    qc.invalidateQueries("tasks");
+    qc.invalidateQueries("currentDay");
   };
 
   // on server connect, initialize client state
