@@ -1,5 +1,13 @@
 import type { ReasonPhrases } from "http-status-codes";
 import type { RequestHandler } from "express";
+import * as ws from "ws";
+
+export interface PRSContext {
+  currentId: string;
+  currentIndex: number;
+  maxIndex: number;
+  mode: "default" | "delete";
+}
 
 export interface ServerError {
   code: number;
@@ -16,3 +24,7 @@ export type ControllerConfig = {
 };
 
 export type Controller<C extends ControllerConfig> = RequestHandler<C["params"], C["payload"], C["body"], C["query"]>;
+
+export interface ExtWebSocket extends ws {
+  identifier?: string; // your custom property
+}

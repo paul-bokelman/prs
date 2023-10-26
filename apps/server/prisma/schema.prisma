@@ -17,3 +17,7 @@ model Task {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
+
+// there should be a day model that has a one to many relationship with tasks to 
+// easily get all tasks for a day and have relative index ordering
+// model Day {}

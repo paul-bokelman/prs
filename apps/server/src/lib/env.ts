@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 
 export const isProduction = process.env.NODE_ENV === "production";
 
-dotenv.config({ path: ".env", debug: true });
+dotenv.config({ path: ".env", debug: false });
 
 const variables = ["NODE_ENV", "PORT", "DATABASE_URL"] as const;
 

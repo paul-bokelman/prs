@@ -1,53 +1,64 @@
-import express, { Express } from "express";
-// import type { appToClientEvents, ClientToappEvents } from "prs-types";
+import type { ExtWebSocket, PRSContext } from "prs-types";
+import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import { env, preflightENV } from "./lib/env";
+import WebSocket, { Instance } from "express-ws";
 import { services } from "./services/router";
 import { socketEvents } from "./services/socket/socket-events";
-import WebSocket, { Instance } from "express-ws";
+import { env, preflightENV } from "./lib/env";
+import { wsu } from "./lib/utils";
+import { context } from "./lib/context";
+import { withContext } from "./middleware/context.middleware";
 
 preflightENV();
 
 declare global {
   namespace Express {
     interface Request {
-      locals: { prs: { id: string; currentIndex: number; maxIndex: number } };
+      context: PRSContext;
     }
   }
 }
 
+(async () => {
+  await context.init({ currentId: "", currentIndex: 0, maxIndex: 0, mode: "default" }); // should be null
+})();
+
 export const instance: Instance = WebSocket(express());
 const app = instance.app;
-
-instance.getWss().on("connection", (ws, req) => {
-  // initialize request locals
-  // req.locals = { prs: { id: "test", currentIndex: 0, maxIndex: 0 } };
-
-  ws.on("message", (msg) => {
-    console.log("Received: ", msg);
-    ws.send(msg);
-  });
-});
 
 app.use(bodyParser.json());
 app.use(cors({ origin: true, credentials: true }));
 
 app.use("/api", services);
 
-const port = env("PORT") || 8000;
+instance.getWss().on("connection", async (ws: ExtWebSocket, req) => {
+  if (req.url.includes("?client=")) {
+    const identifier = req.url.split("?client=")[1];
+    ws.identifier = identifier;
+  }
 
-app.ws("/", (ws, req) => {
-  const context = { ws, req };
+  if (ws.identifier === "physical") {
+    wsu(ws).success(["prsOnline", true]); // have to broadcast this to all clients
+  }
 
-  // ws.on('connection', (ws, req) => {})
+  if (ws.identifier === "web") {
+    const ctx = await context.get();
+    ws.send(JSON.stringify(["initializeClient", ctx]));
+  }
 
+  ws.on("close", (e) => wsu(ws).success(["prsOnline", false]));
+});
+
+app.ws("/ws", withContext, (ws: ExtWebSocket, req) => {
   ws.on("message", async (msg, isBinary) => {
-    if (isBinary) return ws.send(JSON.stringify({ error: "Binary not supported" }));
+    if (isBinary) return wsu(ws).error("Binary messages are not supported");
     const [event, data] = JSON.parse(msg.toString()) as [string, unknown]; // this could cause trouble
-    if (!Object.keys(socketEvents).includes(event)) return ws.send(JSON.stringify({ error: "Invalid event" }));
-    await socketEvents[event](context, data);
+    if (!Object.keys(socketEvents).includes(event)) return wsu(ws).error("Invalid event");
+    await socketEvents[event]({ ws, req }, data);
   });
 });
+
+const port = env("PORT") || 8000;
 
 app.listen(port, () => console.log(`Listening at http://localhost:${port}`));

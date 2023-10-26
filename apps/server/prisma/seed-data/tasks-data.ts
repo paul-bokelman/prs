@@ -9,7 +9,7 @@ export const generateTasksData = (): Array<CreateTaskArgs> => {
 
   for (let i = 0; i < 25; i++) {
     const complete = faker.datatype.boolean();
-    const day = faker.number.int({ max: 3, min: 0 });
+    const day = faker.number.int({ max: 3, min: -1 });
 
     const dueDate = dayjs().endOf("day").add(day, "day").toDate();
 

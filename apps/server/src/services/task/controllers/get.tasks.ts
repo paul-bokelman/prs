@@ -12,11 +12,19 @@ const handler: Controller<GetTasks> = async (req, res) => {
     const endOfDay = date.endOf("day").toDate();
 
     const tasks = await prisma.task.findMany({
-      where: { due: { gte: startOfDay, lt: endOfDay } },
+      where: { due: { gte: startOfDay, lte: endOfDay } },
       orderBy: { order: "asc" },
     });
+
     if (!tasks) return error(StatusCodes.BAD_REQUEST, "No tasks associated with that date");
-    return success(StatusCodes.OK, tasks);
+    return success(
+      StatusCodes.OK,
+      tasks.sort((t1, t2) => {
+        if (t1.complete) return 1;
+        if (t2.complete) return -1;
+        return 0;
+      })
+    );
   } catch (e) {
     return handleControllerError(e, res);
   }

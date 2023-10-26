@@ -7,18 +7,19 @@ import { Plus, CalendarDays, ArrowRight } from "lucide-react";
 import { Task } from "@/components";
 import { Button, Tabs, TabsList, TabsTrigger } from "@/components/ui";
 import { CreateTaskDialog } from "@/components/dialog";
-import { getTimeToNextDay } from "@/lib/utils";
 import { api, qc } from "@/lib/api";
 import { sfx } from "@/lib/sfx";
-import { socket } from "@/lib/socket";
+import { ws } from "@/lib/socket";
+import { usePRS, Countdown } from "@/components";
 
 interface Props {}
 
 const App: React.FC<Props> = () => {
-  const [prsOnline, setPrsOnline] = useState<boolean>(false);
-  const [currentTime, setCurrentTime] = useState<number>(Date.now());
+  const { online, currentTaskIndex, currentTaskId, setCurrentTaskId } = usePRS();
   const [taskMode, setTaskMode] = useState<TaskMode>(TaskMode.DEFAULT);
   const [createDialogOpen, setCreateDialogOpen] = useState<boolean>(false);
+
+  console.log(currentTaskIndex);
 
   const { data: tasks, status } = useQuery("tasks", () => api.tasks.getMany(dayjs().format("YYYY-MM-DD")));
 
@@ -36,23 +37,22 @@ const App: React.FC<Props> = () => {
     totalTasksCompleted: 7,
   };
 
-  // const confirmEvent = (id: string) => {
-  //   socket.emit("confirm", { taskId: id, mode: "default" });
-  //   qc.invalidateQueries("tasks");
-  // };
-
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime((currentTime) => currentTime + 1000);
-    }, 1000);
+    if (online && tasks?.length) {
+      setCurrentTaskId(tasks[currentTaskIndex].id);
+    }
+  }, [online, currentTaskIndex, tasks, setCurrentTaskId]);
 
-    return () => clearInterval(interval);
-  }, []);
+  const testWS = (direction: "left" | "right") => {
+    ws.send(JSON.stringify(["moveIndex", { direction: direction }]));
+  };
 
   if (status !== "success") return <div>stat</div>;
 
   return (
     <>
+      <Button onClick={() => testWS("left")}>Left</Button>
+      <Button onClick={() => testWS("right")}>Right</Button>
       <div className="relative w-screen h-screen flex flex-col gap-2 p-20">
         <div className="relative flex flex-col">
           <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">Physical Reward System</h1>
@@ -90,23 +90,23 @@ const App: React.FC<Props> = () => {
               </span>
             ))}
           </div>
+          {!tasks.length && <span>No tasks</span>}
           <div className="grid grid-cols-3">
-            {tasks.map((task, i) => (
-              <Task key={i} {...task} mode={taskMode} />
-            ))}
+            {tasks
+              // .sort((t1, t2) => {
+              //   if (t1.complete) return 1;
+              //   if (t2.complete) return -1;
+              //   return 0;
+              // })
+              .map((task, i) => (
+                <Task key={i} {...task} selected={online && currentTaskId === task.id} mode={taskMode} />
+              ))}
           </div>
-          {/* <div className="flex items-center gap-2">
-            {tasks.map((task) => (
-              <button onClick={() => confirmEvent(task.id)}>{task.title}</button>
-            ))}
-          </div> */}
         </div>
         <div className="absolute bottom-20 left-20 flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <span className={cn({ "bg-green-500": prsOnline, "bg-red-500": !prsOnline }, "h-2 w-2 rounded-full")} />
-            <p className="text-xs italic leading-7 text-muted-foreground">
-              PRS system {prsOnline ? "online" : "offline"}
-            </p>
+            <span className={cn({ "bg-green-500": online, "bg-red-500": !online }, "h-2 w-2 rounded-full")} />
+            <p className="text-xs italic leading-7 text-muted-foreground">PRS system {online ? "online" : "offline"}</p>
           </div>
           <div className="flex items-center gap-3">
             {[`⚡️ ${stats.streak}`, `🏆 ${stats.totalTasksCompleted}`].map((value) => (
@@ -115,7 +115,7 @@ const App: React.FC<Props> = () => {
               </span>
             ))}
           </div>
-          <span className="text-xs text-muted-foreground">{getTimeToNextDay(currentTime)}</span>
+          <Countdown />
         </div>
       </div>
       <CreateTaskDialog open={createDialogOpen} close={closeCreateDialog} />

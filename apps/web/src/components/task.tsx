@@ -8,13 +8,14 @@ import { useToast } from "@/components/ui";
 import { Circle, CheckCircle2, Pencil, Trash2 } from "lucide-react";
 import { api, qc } from "@/lib/api";
 import { sfx } from "@/lib/sfx";
-import { socket } from "@/lib/socket";
+// import { socket } from "@/lib/socket";
 
 type Props = GetTasks["payload"][number] & {
+  selected?: boolean;
   mode: TaskMode;
 };
 
-export const Task: React.FC<Props> = ({ mode, ...task }) => {
+export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
   const { toast } = useToast();
   const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false);
   const [onHover, setOnHover] = useState<boolean>(false);
@@ -78,7 +79,10 @@ export const Task: React.FC<Props> = ({ mode, ...task }) => {
       <div
         onMouseEnter={() => setOnHover(true)}
         onMouseLeave={() => setOnHover(false)}
-        className="flex flex-col cursor-pointer hover:bg-accent/50 px-4 py-2 rounded-lg group"
+        className={cn(
+          { "bg-accent/50": selected },
+          "flex flex-col cursor-pointer hover:bg-accent/50 px-4 py-2 rounded-lg group"
+        )}
         onClick={handleInteraction}
       >
         <div className="grid grid-cols-2 items-center">
