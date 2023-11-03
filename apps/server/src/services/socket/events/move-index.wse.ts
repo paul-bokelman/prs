@@ -15,8 +15,10 @@ export const moveIndexEvent: MoveIndexEvent = async ({ ws, req }, { direction })
     newIndex = nextIndex;
   }
 
+  // ? Update currentIndex and currentId in context
+
   req.context.currentIndex = newIndex;
   await context.set(req.context);
 
-  wsu(ws).success(["movedIndex", { newIndex }]);
+  return wsu(ws).success(["revalidateContext", req.context]);
 };

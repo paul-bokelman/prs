@@ -1,6 +1,17 @@
 import type { Response } from "express";
 import type { ControllerConfig, ServerError } from "prs-types";
-import { getReasonPhrase } from "http-status-codes";
+import { Prisma } from "@prisma/client";
+import { StatusCodes, getReasonPhrase } from "http-status-codes";
+
+export const handleControllerError = (e: unknown, res: Response) => {
+  const { error } = formatResponse(res as Response<ServerError>);
+
+  if (e instanceof Prisma.PrismaClientKnownRequestError || e instanceof Error) {
+    return error(StatusCodes.INTERNAL_SERVER_ERROR, `Unhandled Exception: ${e.message}`);
+  }
+
+  return error(StatusCodes.INTERNAL_SERVER_ERROR);
+};
 
 export const formatResponse = <C extends ControllerConfig>(res: Response) => {
   return {

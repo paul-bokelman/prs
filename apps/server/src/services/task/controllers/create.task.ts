@@ -20,6 +20,8 @@ const handler: Controller<CreateTask> = async (req, res) => {
         data: { day: { connect: { id: dayId } }, ...taskData },
         include: { day: true },
       });
+
+      await context.update((ctx) => ({ maxIndex: ctx.maxIndex + 1 }));
       return success(StatusCodes.OK, task);
     }
 
@@ -29,12 +31,15 @@ const handler: Controller<CreateTask> = async (req, res) => {
       where: { date: { lte: date.endOf("day").toDate(), gte: date.startOf("day").toDate() } },
     });
 
+    // the lines below can be condensed...
     if (!existingDay) {
       const newDay = await prisma.day.create({ data: { date: date.toDate() } });
       const task = await prisma.task.create({
         data: { day: { connect: { id: newDay.id } }, ...taskData },
         include: { day: true },
       });
+
+      await context.update((ctx) => ({ maxIndex: ctx.maxIndex + 1 }));
       return success(StatusCodes.OK, task);
     }
 
@@ -42,6 +47,8 @@ const handler: Controller<CreateTask> = async (req, res) => {
       data: { day: { connect: { id: existingDay.id } }, ...taskData },
       include: { day: true },
     });
+
+    await context.update((ctx) => ({ maxIndex: ctx.maxIndex + 1 }));
     return success(StatusCodes.OK, task);
   } catch (e) {
     return handleControllerError(e, res);

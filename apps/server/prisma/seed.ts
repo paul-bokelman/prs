@@ -9,6 +9,7 @@ type CreateTaskArgs = Omit<Task, "id" | "createdAt" | "updatedAt">;
 (async () => {
   try {
     await prisma.task.deleteMany();
+    await prisma.day.deleteMany();
 
     let days: Day[] = [];
 
@@ -34,7 +35,7 @@ type CreateTaskArgs = Omit<Task, "id" | "createdAt" | "updatedAt">;
       await prisma.task.createMany({ data: tasks });
     }
 
-    await context.destroy();
+    // await context.destroy();
     await prisma.$disconnect();
   } catch (e) {
     console.error(e);

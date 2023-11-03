@@ -20,9 +20,10 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui";
-import { api, qc } from "@/lib/api";
+import { api } from "@/lib/api";
 import { sfx } from "@/lib/sfx";
 import dayjs from "dayjs";
+import { usePRS } from "..";
 
 interface Props {
   open: boolean;
@@ -37,11 +38,12 @@ const formSchema = z.object({
 
 export const CreateTaskDialog: React.FC<Props> = ({ open, close }) => {
   const { toast } = useToast();
+  const { revalidateContext } = usePRS();
 
   const createTask = useMutation<CreateTask["payload"], ServerError, { data: CreateTask["body"] }>({
     mutationFn: ({ data }) => api.tasks.create(data),
     onSuccess: () => {
-      qc.invalidateQueries("currentDay");
+      revalidateContext();
       sfx.success.play();
     },
     onError: () => {
@@ -74,8 +76,8 @@ export const CreateTaskDialog: React.FC<Props> = ({ open, close }) => {
     <Dialog open={open} defaultOpen={false}>
       <DialogContent onEscapeKeyDown={close} onInteractOutside={close}>
         <DialogHeader>
-          <DialogTitle>Edit Task</DialogTitle>
-          <DialogDescription>Edit the title and date of this task.</DialogDescription>
+          <DialogTitle>New Task</DialogTitle>
+          <DialogDescription>Create a new task with a description</DialogDescription>
         </DialogHeader>
         <div className="flex flex-col gap-2 mt-2">
           <Form {...form}>
@@ -85,7 +87,7 @@ export const CreateTaskDialog: React.FC<Props> = ({ open, close }) => {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Task Title</FormLabel>
+                    <FormLabel>Description</FormLabel>
                     <FormControl>
                       <Input placeholder="Math HW" {...field} />
                     </FormControl>

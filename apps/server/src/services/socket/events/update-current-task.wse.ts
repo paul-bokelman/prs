@@ -8,7 +8,7 @@ export const updateCurrentTaskEvent: UpdateCurrentTaskEvent = async (
   { currentTaskId, currentTaskIndex }
 ) => {
   if (!currentTaskId) return wsu(ws).error("No currentTaskId provided");
-  if (!currentTaskIndex) return wsu(ws).error("No currentTaskIndex provided");
+  if (currentTaskIndex === undefined) return wsu(ws).error("No currentTaskIndex provided");
   if (currentTaskIndex < 0) return wsu(ws).error("Invalid currentTaskIndex");
   req.context.currentId = currentTaskId;
   req.context.currentIndex = currentTaskIndex;
