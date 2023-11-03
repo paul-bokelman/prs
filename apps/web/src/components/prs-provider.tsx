@@ -1,11 +1,4 @@
-import type {
-  PRSContext,
-  ServerToClientEvents,
-  ConfirmedEvent,
-  MovedIndexEvent,
-  InitializeClientEvent,
-  PRSOnlineEvent,
-} from "prs-types";
+import type { ServerToClientEvents, PRSOnlineEvent, RevalidateContextEvent } from "prs-types";
 import { TaskMode } from "@/types";
 import { createContext, useContext, useEffect, useState } from "react";
 import { ws } from "@/lib/socket";
@@ -19,21 +12,23 @@ type PRSProviderProps = {
 type PRSProviderState = {
   online: boolean;
   currentTaskId: string;
-  setCurrentTaskId: (id: string) => void;
   currentMode: Exclude<TaskMode, TaskMode.EDIT>;
-  setCurrentMode: (mode: Exclude<TaskMode, TaskMode.EDIT>) => void;
   currentTaskIndex: number;
   taskMode: TaskMode;
+  setCurrentTaskId: (id: string) => void;
+  setCurrentMode: (mode: Exclude<TaskMode, TaskMode.EDIT>) => void;
+  revalidateContext: () => void;
 };
 
 const initialState: PRSProviderState = {
   online: false,
   currentMode: TaskMode.DEFAULT,
   currentTaskId: "",
-  setCurrentTaskId: () => {},
-  setCurrentMode: () => {},
   currentTaskIndex: 0,
   taskMode: TaskMode.DEFAULT,
+  setCurrentTaskId: () => {},
+  setCurrentMode: () => {},
+  revalidateContext: () => {},
 };
 
 const PRSProviderContext = createContext<PRSProviderState>(initialState);
@@ -44,26 +39,18 @@ export function PRSProvider({ children, ...props }: PRSProviderProps) {
   const [currentTaskId, setCurrentTaskId] = useState<string>("");
   const [currentMode, setCurrentMode] = useState<Exclude<TaskMode, TaskMode.EDIT>>(TaskMode.DEFAULT);
   const [currentTaskIndex, setCurrentTaskIndex] = useState<number>(0);
-  const [eventExecuted, setEventExecuted] = useState<boolean>(false);
 
-  // when the index is moved by the user, the server context needs to be updated
-  const movedIndexEvent: MovedIndexEvent = ({ newIndex }) => {
-    sfx.select.play();
-    setCurrentTaskIndex(newIndex);
+  const revalidateContext = () => {
+    ws.dispatch(["getContext"]);
   };
 
-  // when the current task is updated by the user, the server context needs to be updated
-  const confirmedEvent: ConfirmedEvent = ({ taskId }) => {
-    // ideally use setQuery then invalidateQueries
-    sfx.complete().play();
+  const revalidateContextEvent: RevalidateContextEvent = (ctx) => {
+    // todo: insure args are not null
+    //? play sound on confirm?
+    setCurrentTaskId(ctx.currentId as string);
+    setCurrentTaskIndex(ctx.currentIndex as number);
+    setCurrentMode(ctx.mode as Exclude<TaskMode, TaskMode.EDIT>);
     qc.invalidateQueries("currentDay");
-  };
-
-  // on server connect, initialize client state
-  const initializeClientEvent: InitializeClientEvent = (context: PRSContext) => {
-    setCurrentTaskId(context.currentId);
-    setCurrentTaskIndex(context.currentIndex);
-    setCurrentMode(context.mode as Exclude<TaskMode, TaskMode.EDIT>); // change default type
   };
 
   const prsOnlineEvent: PRSOnlineEvent = (online: boolean) => {
@@ -71,10 +58,8 @@ export function PRSProvider({ children, ...props }: PRSProviderProps) {
   };
 
   const events = {
-    movedIndex: movedIndexEvent,
-    confirmed: confirmedEvent,
-    initializeClient: initializeClientEvent,
     prsOnline: prsOnlineEvent,
+    revalidateContext: revalidateContextEvent,
   };
 
   ws.onmessage = (e) => {
@@ -82,13 +67,12 @@ export function PRSProvider({ children, ...props }: PRSProviderProps) {
       const data = JSON.parse(e.data);
       const [event, args] = data as [
         keyof ServerToClientEvents,
-        ServerToClientEvents[keyof ServerToClientEvents]["arguments"], // TODO: fix this
+        ServerToClientEvents[keyof ServerToClientEvents]["arguments"],
       ];
 
       if (event in events) events[event](args);
-      setEventExecuted(true);
     } catch (err) {
-      // not valid JSON
+      // invalid json (just message?)
       console.log(e.data);
     }
   };
@@ -98,26 +82,20 @@ export function PRSProvider({ children, ...props }: PRSProviderProps) {
     ws.addEventListener("close", () => setWsOpen(false));
   });
 
-  //! remove when testing with physical system
+  // todo: remove when testing with physical system
   useEffect(() => {
     setOnline(wsOpen); // will need to change to detect physical system not just server
   }, [wsOpen]);
-
-  useEffect(() => {
-    if (wsOpen && eventExecuted) {
-      ws.send(JSON.stringify(["updateCurrentTask", { currentTaskId, currentTaskIndex }]));
-      setEventExecuted(false);
-    }
-  }, [currentTaskId, currentTaskIndex, wsOpen, eventExecuted]);
 
   const value: PRSProviderState = {
     online,
     currentTaskIndex,
     currentTaskId,
     currentMode,
+    taskMode: TaskMode.DEFAULT,
     setCurrentTaskId,
     setCurrentMode,
-    taskMode: TaskMode.DEFAULT,
+    revalidateContext,
   };
 
   return (

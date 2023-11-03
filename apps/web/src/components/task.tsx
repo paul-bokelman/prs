@@ -6,9 +6,9 @@ import { TaskMode } from "@/types";
 import { EditTaskDialog } from "@/components/dialog";
 import { useToast } from "@/components/ui";
 import { Circle, CheckCircle2, Pencil, Trash2 } from "lucide-react";
-import { api, qc } from "@/lib/api";
+import { api } from "@/lib/api";
 import { sfx } from "@/lib/sfx";
-// import { socket } from "@/lib/socket";
+import { usePRS } from "@/components";
 
 type Props = GetDay["payload"]["tasks"][number] & {
   selected?: boolean;
@@ -17,6 +17,7 @@ type Props = GetDay["payload"]["tasks"][number] & {
 
 export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
   const { toast } = useToast();
+  const { revalidateContext } = usePRS();
   const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false);
   const [onHover, setOnHover] = useState<boolean>(false);
 
@@ -28,9 +29,7 @@ export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
     { id: string; data: UpdateTask["body"] }
   >({
     mutationFn: ({ id, data }) => api.tasks.update(id, data),
-    onSuccess: () => {
-      qc.invalidateQueries("currentDay");
-    },
+    onSuccess: () => revalidateContext(),
     onError: () => {
       toast({ title: "Failed to update task", variant: "destructive" });
     },
@@ -38,9 +37,7 @@ export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
 
   const { mutate: deleteTaskMutation } = useMutation<DeleteTask["payload"], ServerError, string>({
     mutationFn: (id) => api.tasks.delete(id),
-    onSuccess: () => {
-      qc.invalidateQueries("currentDay");
-    },
+    onSuccess: () => revalidateContext(),
     onError: () => {
       toast({ title: "Failed to delete task", variant: "destructive" });
     },
@@ -109,12 +106,7 @@ export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
           </div>
         </div>
       </div>
-      <EditTaskDialog
-        open={editDialogOpen}
-        close={closeEditDialog}
-        taskDescription={description}
-        updateTask={(description: string) => updateTaskMutation({ id, data: { description } })}
-      />
+      <EditTaskDialog task={{ id, description }} open={editDialogOpen} close={closeEditDialog} />
     </>
   );
 };

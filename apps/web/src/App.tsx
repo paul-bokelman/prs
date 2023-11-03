@@ -1,5 +1,5 @@
 import { TaskMode } from "@/types";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "react-query";
 import cn from "clsx";
 import dayjs from "dayjs";
@@ -7,7 +7,7 @@ import { Plus, CalendarDays, ArrowRight } from "lucide-react";
 import { Task } from "@/components";
 import { Button, Tabs, TabsList, TabsTrigger } from "@/components/ui";
 import { CreateTaskDialog } from "@/components/dialog";
-import { api, qc } from "@/lib/api";
+import { api } from "@/lib/api";
 import { sfx } from "@/lib/sfx";
 import { ws } from "@/lib/socket";
 import { usePRS, Countdown } from "@/components";
@@ -15,13 +15,11 @@ import { usePRS, Countdown } from "@/components";
 interface Props {}
 
 const App: React.FC<Props> = () => {
-  const { online, currentTaskIndex, currentTaskId, setCurrentTaskId } = usePRS();
+  const { online, currentTaskIndex, currentTaskId } = usePRS();
   const [taskMode, setTaskMode] = useState<TaskMode>(TaskMode.DEFAULT);
   const [createDialogOpen, setCreateDialogOpen] = useState<boolean>(false);
 
   const { data: day, status } = useQuery("currentDay", () => api.days.get(dayjs().format("YYYY-MM-DD")));
-
-  console.log(day);
 
   const changeTaskMode = (mode: string) => {
     const currentMode = TaskMode[mode.toUpperCase() as keyof typeof TaskMode];
@@ -37,22 +35,22 @@ const App: React.FC<Props> = () => {
     totalTasksCompleted: 7,
   };
 
-  useEffect(() => {
-    if (online && day?.tasks?.length) {
-      setCurrentTaskId(day.tasks[currentTaskIndex].id);
-    }
-  }, [online, currentTaskIndex, day?.tasks, setCurrentTaskId]);
+  const sendDirection = (direction: "left" | "right") => {
+    ws.dispatch(["moveIndex", { direction }]);
+  };
 
-  const testWS = (direction: "left" | "right") => {
-    ws.send(JSON.stringify(["moveIndex", { direction: direction }]));
+  const sendConfirm = () => {
+    console.log(currentTaskId);
+    ws.dispatch(["confirm"]);
   };
 
   if (status !== "success") return <div>stat</div>;
 
   return (
     <>
-      <Button onClick={() => testWS("left")}>Left</Button>
-      <Button onClick={() => testWS("right")}>Right</Button>
+      <Button onClick={() => sendDirection("left")}>Left</Button>
+      <Button onClick={() => sendConfirm()}>Confirm</Button>
+      <Button onClick={() => sendDirection("right")}>Right</Button>
       <div className="relative w-screen h-screen flex flex-col gap-2 p-20">
         <div className="relative flex flex-col">
           <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">Physical Reward System</h1>
@@ -91,9 +89,9 @@ const App: React.FC<Props> = () => {
             ))}
           </div>
           {!day.tasks.length && <span>No tasks</span>}
-          <div className="grid grid-cols-3">
+          <div className="grid grid-cols-3 gap-1">
             {day.tasks.map((task, i) => (
-              <Task key={i} {...task} selected={online && currentTaskId === task.id} mode={taskMode} />
+              <Task key={i} {...task} mode={taskMode} selected={online && currentTaskIndex === i} />
             ))}
           </div>
         </div>

@@ -10,30 +10,19 @@ const handler: Controller<DeleteTask> = async (req, res) => {
     const task = await prisma.task.findUnique({ where: { id: req.params.id } });
     if (!task) return error(StatusCodes.BAD_REQUEST, "No task associated with that ID");
 
-    const deletedTask = await prisma.task.delete({ where: { id: req.params.id }, include: { day: true } });
-    const isCurrentDay = deletedTask.day.date.setHours(0, 0, 0, 0) === new Date().setHours(0, 0, 0, 0);
+    const deletedTask = await prisma.task.delete({
+      where: { id: req.params.id },
+      include: { day: { include: { tasks: true } } },
+    });
 
-    // if it's the current day, context needs to be updated to reflect the deletion
-    // if (isCurrentDay) {
-    //   await context.update((ctx) => {
-    //     ctx.maxIndex = ctx.maxIndex - 1;
-
-    //     if (ctx.maxIndex < 0) {
-    //       ctx.maxIndex = null;
-    //       ctx.currentIndex = null;
-    //       ctx.currentId = null;
-    //       return ctx;
-    //     }
-    //     if (ctx.currentIndex > ctx.maxIndex) {
-    //       ctx.currentIndex = ctx.maxIndex;
-
-    //       // await prisma.task.findUnique({where: {day: {id: deletedTask.id}}})
-
-    //       ctx.currentId = null; // not sure what to do here
-    //     }
-    //     return ctx;
-    //   });
-    // }
+    await context.update((ctx) => {
+      ctx.maxIndex = ctx.maxIndex - 1; // should be ok... right?
+      if (ctx.currentIndex > ctx.maxIndex) {
+        ctx.currentIndex = ctx.currentIndex - 1;
+        ctx.currentId = deletedTask.day.tasks[ctx.currentIndex - 1].id; // TODO: check
+      }
+      return ctx;
+    });
 
     return success(StatusCodes.OK, deletedTask);
   } catch (e) {

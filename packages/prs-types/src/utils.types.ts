@@ -1,11 +1,13 @@
 import type { ReasonPhrases } from "http-status-codes";
 import type { RequestHandler } from "express";
+import type { ServerToClientEvents } from "./socket.types";
 import * as ws from "ws";
 
 export interface PRSContext {
-  currentId: string;
-  currentIndex: number;
-  maxIndex: number;
+  currentDayId: string;
+  currentId: string | null;
+  currentIndex: number | null;
+  maxIndex: number | null;
   mode: "default" | "delete";
 }
 
@@ -27,4 +29,7 @@ export type Controller<C extends ControllerConfig> = RequestHandler<C["params"],
 
 export interface ExtWebSocket extends ws {
   identifier?: string; // your custom property
+  broadcast: <T extends keyof ServerToClientEvents>(
+    data: [T, Parameters<ServerToClientEvents[T]>[0]] | { error: boolean; message: string } | string
+  ) => void;
 }
