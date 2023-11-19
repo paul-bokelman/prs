@@ -1,6 +1,9 @@
 ---
 name: Epic
 about: A task large enough that it needs to be divided into smaller tasks. Labeled as `epic`.
+title: "epic: EPIC_TITLE"
+labels: epic
+assignees: paul-bokelman
 ---
 
 ## Description

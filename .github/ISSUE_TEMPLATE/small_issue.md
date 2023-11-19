@@ -1,6 +1,9 @@
 ---
 name: Task
 about: A small task that is, most likely, part of an Epic. Labeled as `task`.
+title: "task: TASK_TITLE"
+labels: task
+assignees: paul-bokelman
 ---
 
 ## Description

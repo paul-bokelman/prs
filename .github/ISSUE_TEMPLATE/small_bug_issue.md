@@ -1,6 +1,9 @@
 ---
 name: Bug
-about: An bug in the program that needs to be resolved.
+about: A bug in the program that needs to be resolved.
+title: "bug: BUG_TITLE"
+labels: bug
+assignees: paul-bokelman
 ---
 
 ## Description

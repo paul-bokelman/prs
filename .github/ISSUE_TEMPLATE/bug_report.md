@@ -1,6 +1,9 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: File a bug/issue
+title: "bug: BUG_TITLE"
+labels: bug
+assignees: paul-bokelman
 ---
 
 <!-- Please search existing issues to avoid creating duplicates. -->
