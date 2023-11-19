@@ -1,5 +1,6 @@
 import type { ServerError, CreateTask } from "prs-types";
 import * as React from "react";
+import { useSearchParams } from "react-router-dom";
 import { useMutation } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -39,6 +40,7 @@ const formSchema = z.object({
 export const CreateTaskDialog: React.FC<Props> = ({ open, close }) => {
   const { toast } = useToast();
   const { revalidateContext } = usePRS();
+  const [params] = useSearchParams(location.search);
 
   const createTask = useMutation<CreateTask["payload"], ServerError, { data: CreateTask["body"] }>({
     mutationFn: ({ data }) => api.tasks.create(data),
@@ -53,15 +55,11 @@ export const CreateTaskDialog: React.FC<Props> = ({ open, close }) => {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      description: "",
-      complete: false,
-      reoccurring: false,
-    },
+    defaultValues: {description: "",complete: false,reoccurring: false},
   });
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
-    createTask.mutate({ data: { day: dayjs().format("YYYY-MM-DD"), ...data } });
+    createTask.mutate({ data: { day: dayjs(params.get('date')).format("YYYY-MM-DD"), ...data } });
     close();
   };
 

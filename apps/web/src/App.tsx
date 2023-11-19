@@ -1,14 +1,14 @@
 import { TaskMode } from "@/types";
 import * as React from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate} from "react-router-dom";
 import { useQuery } from "react-query";
 import cn from "clsx";
 import dayjs from "dayjs";
-import { Plus, CalendarDays, ArrowRight } from "lucide-react";
+import { Plus, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { Task } from "@/components";
 import { Button, Tabs, TabsList, TabsTrigger } from "@/components/ui";
 import { CreateTaskDialog } from "@/components/dialog";
-import { api, qc } from "@/lib/api";
+import { api } from "@/lib/api";
 import { sfx } from "@/lib/sfx";
 import { ws } from "@/lib/socket";
 import { usePRS, Countdown } from "@/components";
@@ -16,16 +16,12 @@ import { usePRS, Countdown } from "@/components";
 interface Props {}
 
 const App: React.FC<Props> = () => {
-  const { online, currentTaskIndex, currentTaskId } = usePRS();
+  const { online, currentTaskIndex } = usePRS();
+  const navigate = useNavigate();
   const [taskMode, setTaskMode] = React.useState<TaskMode>(TaskMode.DEFAULT);
   const [createDialogOpen, setCreateDialogOpen] = React.useState<boolean>(false);
-  const [params, setParams] = useSearchParams({date: dayjs().format("YYYY-MM-DD")});
-
+  const [params] = useSearchParams(location.search);
   const date = params.get("date");
-
-  // append queryDate to url then read and pull day from currentQueryDate
-  // context will need to be reloaded so this will need to be an event
-  // alternatively, just add a way to add tasks to the next day but not be able to access them with the PRS
 
   const { data: day, status } = useQuery(["currentDay", date], () => api.days.get(date as string));
 
@@ -42,25 +38,28 @@ const App: React.FC<Props> = () => {
     ws.dispatch(["moveIndex", { direction }]);
   };
 
-
   const sendConfirm = () => {
     ws.dispatch(["confirm"]);
   };
 
+  function changeQueryDate(direction: "increment" | "decrement") {
+    const newDate = dayjs(date as string).add(direction === "increment" ? 1 : -1, "day").format("YYYY-MM-DD");
+    params.set("date", newDate);
+    navigate(`/?${params.toString()}`);
+  }
+
   React.useEffect(() => {
-    params.set('date', dayjs().format("YYYY-MM-DD"));
-    // if(params.get("date") !== dayjs().format("YYYY-MM-DD")) {
-    //   setParams({date: dayjs().format("YYYY-MM-DD")})
-    // }
-  }, [params, setParams])
+    if(params.get("date") === null) {
+      params.set("date", dayjs().format("YYYY-MM-DD"));
+    }
+    navigate(`/?${params.toString()}`);
+  }, [navigate, params])
 
   return (
     <>
       <Button onClick={() => sendDirection("left")}>Left</Button>
       <Button onClick={() => sendConfirm()}>Confirm</Button>
       <Button onClick={() => sendDirection("right")}>Right</Button>
-      {/* <Button onClick={() => changeQueryDate("increment")}>Increment</Button> */}
-      {/* <Button onClick={() => changeQueryDate("decrement")}>Decrement</Button> */}
       <div className="relative w-screen h-screen flex flex-col gap-2 p-20">
         <div className="relative flex flex-col">
           <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">Physical Reward System</h1>
@@ -74,16 +73,23 @@ const App: React.FC<Props> = () => {
             <Button variant="outline" size="icon" onClick={() => setCreateDialogOpen(true)}>
               <Plus className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="icon">
-              <CalendarDays className="h-4 w-4" />
-            </Button>
-            <Tabs defaultValue="default" onValueChange={changeTaskMode} className="w-[400px]">
+
+            <Tabs defaultValue="default" onValueChange={changeTaskMode} className="w-auto">
               <TabsList>
                 <TabsTrigger value="default">Default</TabsTrigger>
                 <TabsTrigger value="edit">Edit</TabsTrigger>
                 <TabsTrigger value="delete">Delete</TabsTrigger>
               </TabsList>
             </Tabs>
+            <div className="flex items-center gap-4">
+              <Button variant="outline" size="icon" onClick={() => changeQueryDate('decrement')}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className={cn({'text-muted-foreground': dayjs(date).isSame(dayjs(), 'day')}, 'text-sm')}>{dayjs(date).format('MMM DD')}</span>
+              <Button variant="outline" size="icon" onClick={() => changeQueryDate('increment')}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
           {status === "success" ? (
             <>
@@ -118,7 +124,7 @@ const App: React.FC<Props> = () => {
           </div>
           {day?.stats ? (
             <div className="flex items-center gap-3">
-              {[`⚡️ ${day.stats.streak}`, `🏆 ${day.stats.totalTasksCompleted}`].map((value) => (
+              {[`⚡️ ${day.stats.streak}`, `🏆 ${day.stats.totalTasksCompleted}`, `📈 ${"32.4%"}`].map((value) => (
                 <span key={value} className="text-xs leading-7 text-muted-foreground">
                   {value}
                 </span>
