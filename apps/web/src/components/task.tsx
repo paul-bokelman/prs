@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import * as React from "react";
 import type { GetDay, ServerError, UpdateTask, DeleteTask } from "prs-types";
 import cn from "clsx";
 import { useMutation } from "react-query";
@@ -18,54 +18,43 @@ type Props = GetDay["payload"]["tasks"][number] & {
 export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
   const { toast } = useToast();
   const { revalidateContext } = usePRS();
-  const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false);
-  const [onHover, setOnHover] = useState<boolean>(false);
+  const [editDialogOpen, setEditDialogOpen] = React.useState<boolean>(false);
+  const [onHover, setOnHover] = React.useState<boolean>(false);
 
   const { id, description, complete } = task;
 
-  const { mutate: updateTaskMutation } = useMutation<
-    UpdateTask["payload"],
-    ServerError,
-    { id: string; data: UpdateTask["body"] }
-  >({
+  const updateTask = useMutation<UpdateTask["payload"], ServerError, { id: string; data: UpdateTask["body"] }>({
     mutationFn: ({ id, data }) => api.tasks.update(id, data),
-    onSuccess: () => revalidateContext(),
+    onSuccess: () => {
+      revalidateContext();
+      sfx.complete().play();
+    },
     onError: () => {
       toast({ title: "Failed to update task", variant: "destructive" });
     },
   });
 
-  const { mutate: deleteTaskMutation } = useMutation<DeleteTask["payload"], ServerError, string>({
+  const deleteTask = useMutation<DeleteTask["payload"], ServerError, string>({
     mutationFn: (id) => api.tasks.delete(id),
-    onSuccess: () => revalidateContext(),
+    onSuccess: () => {
+      revalidateContext();
+      sfx.delete().play();
+    },
     onError: () => {
       toast({ title: "Failed to delete task", variant: "destructive" });
     },
   });
 
-  const closeEditDialog = () => setEditDialogOpen(false);
-  const completeTask = () => {
-    updateTaskMutation({ id, data: { complete: !complete } });
-    sfx.complete().play();
-  };
-
-  const editTask = () => {
-    setEditDialogOpen(true);
-    // edit modal
-  };
-
-  const deleteTask = () => {
-    deleteTaskMutation(id);
-    sfx.delete().play();
-  };
+  const closeUpdateDialog = () => setEditDialogOpen(false);
+  const openUpdateDialog = () => setEditDialogOpen(true);
 
   const handleInteraction = () => {
-    if (mode === TaskMode.DEFAULT) return completeTask();
-    if (mode === TaskMode.EDIT) return editTask();
-    if (mode === TaskMode.DELETE) return deleteTask();
+    if (mode === TaskMode.DEFAULT) return updateTask.mutate({ id, data: { complete: !complete } });
+    if (mode === TaskMode.EDIT) return openUpdateDialog();
+    if (mode === TaskMode.DELETE) return deleteTask.mutate(id);
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (onHover) {
       sfx.select.play();
     }
@@ -106,7 +95,7 @@ export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
           </div>
         </div>
       </div>
-      <EditTaskDialog task={{ id, description }} open={editDialogOpen} close={closeEditDialog} />
+      <EditTaskDialog task={{ id, description }} open={editDialogOpen} close={closeUpdateDialog} />
     </>
   );
 };

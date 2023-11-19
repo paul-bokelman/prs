@@ -1,9 +1,9 @@
 import type { ServerToClientEvents, PRSOnlineEvent, RevalidateContextEvent } from "prs-types";
+import * as React from "react";
 import { TaskMode } from "@/types";
-import { createContext, useContext, useEffect, useState } from "react";
 import { ws } from "@/lib/socket";
 import { qc } from "@/lib/api";
-import { sfx } from "@/lib/sfx";
+// import { sfx } from "@/lib/sfx";
 
 type PRSProviderProps = {
   children: React.ReactNode;
@@ -31,14 +31,14 @@ const initialState: PRSProviderState = {
   revalidateContext: () => {},
 };
 
-const PRSProviderContext = createContext<PRSProviderState>(initialState);
+const PRSProviderContext = React.createContext<PRSProviderState>(initialState);
 
 export function PRSProvider({ children, ...props }: PRSProviderProps) {
-  const [online, setOnline] = useState<boolean>(true);
-  const [wsOpen, setWsOpen] = useState<boolean>(false);
-  const [currentTaskId, setCurrentTaskId] = useState<string>("");
-  const [currentMode, setCurrentMode] = useState<Exclude<TaskMode, TaskMode.EDIT>>(TaskMode.DEFAULT);
-  const [currentTaskIndex, setCurrentTaskIndex] = useState<number>(0);
+  const [online, setOnline] = React.useState<boolean>(true);
+  const [wsOpen, setWsOpen] = React.useState<boolean>(false);
+  const [currentTaskId, setCurrentTaskId] = React.useState<string>("");
+  const [currentMode, setCurrentMode] = React.useState<Exclude<TaskMode, TaskMode.EDIT>>(TaskMode.DEFAULT);
+  const [currentTaskIndex, setCurrentTaskIndex] = React.useState<number>(0);
 
   const revalidateContext = () => {
     ws.dispatch(["getContext"]);
@@ -83,7 +83,7 @@ export function PRSProvider({ children, ...props }: PRSProviderProps) {
   });
 
   // todo: remove when testing with physical system
-  useEffect(() => {
+  React.useEffect(() => {
     setOnline(wsOpen); // will need to change to detect physical system not just server
   }, [wsOpen]);
 
@@ -105,8 +105,9 @@ export function PRSProvider({ children, ...props }: PRSProviderProps) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const usePRS = () => {
-  const context = useContext(PRSProviderContext);
+  const context = React.useContext(PRSProviderContext);
   if (context === undefined) throw new Error("usePRS must be used within a PRSProvider");
   return context;
 };

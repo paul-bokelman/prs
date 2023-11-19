@@ -6,7 +6,7 @@ export interface GetDay {
   params: {};
   body: {};
   query: { date: string };
-  payload: Day & { tasks: Array<Task> };
+  payload: Day & { tasks: Array<Task>; stats: { streak: number; totalTasksCompleted: number } };
 }
 
 /* ---------------------------------- TASKS --------------------------------- */

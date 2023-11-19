@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import * as React from "react";
 
 interface Props {}
 
 export const Countdown: React.FC<Props> = () => {
-  const [currentTime, setCurrentTime] = useState<number>(Date.now());
+  const [currentTime, setCurrentTime] = React.useState<number>(Date.now());
 
   // use dayjs...
   const getTimeToNextDay = (currentTime: number): string => {
@@ -23,7 +23,7 @@ export const Countdown: React.FC<Props> = () => {
     return formattedTime.join(":");
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime((currentTime) => currentTime + 1000);
     }, 1000);

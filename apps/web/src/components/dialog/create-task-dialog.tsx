@@ -1,5 +1,5 @@
-import { ServerError, CreateTask } from "prs-types";
-import { useEffect } from "react";
+import type { ServerError, CreateTask } from "prs-types";
+import * as React from "react";
 import { useMutation } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -65,7 +65,7 @@ export const CreateTaskDialog: React.FC<Props> = ({ open, close }) => {
     close();
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (open) {
       form.reset();
       sfx.click.play();
