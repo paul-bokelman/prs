@@ -30,10 +30,4 @@ export const getDay = async (incomingDate: Date | string = new Date()): Promise<
   }
 };
 
-export const getCurrentTaskByIndex = async (currentIndex: number): Promise<Task | null> => {
-  const day = await getDay();
-  if (!day) return null;
-  return day.tasks[currentIndex];
-};
-
-export const prismaUtils = { getDay, getCurrentTaskByIndex };
+export const prismaUtils = { getDay };

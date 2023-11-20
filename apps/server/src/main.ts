@@ -6,12 +6,8 @@ import WebSocket, { Instance } from "express-ws";
 import { services } from "./services/router";
 import { socketEvents } from "./services/socket/socket-events";
 import { env, preflightENV } from "./lib/env";
-import { wsu } from "./lib/utils";
+import { wsUtils } from "./lib/utils";
 import { context } from "./lib/context";
-import { withContext } from "./middleware/context.middleware";
-import { broadcast } from "./lib/utils";
-
-preflightENV();
 
 declare global {
   namespace Express {
@@ -20,6 +16,8 @@ declare global {
     }
   }
 }
+
+preflightENV();
 
 (async () => await context.revalidate())();
 
@@ -31,9 +29,10 @@ app.use(cors({ origin: true, credentials: true }));
 
 app.use("/api", services);
 
-//! WSU should exist on ws
-
 instance.getWss().on("connection", async (ws: ExtWebSocket, req) => {
+  const { success, error, broadcast } = wsUtils(ws);
+  (ws.success = success), (ws.error = error), (ws.broadcast = broadcast);
+
   if (req.url.includes("?client=")) {
     const identifier = req.url.split("?client=")[1];
     ws.identifier = identifier;
@@ -42,15 +41,15 @@ instance.getWss().on("connection", async (ws: ExtWebSocket, req) => {
   console.log("connection:", ws.identifier);
 
   if (ws.identifier === "physical") {
-    wsu(ws).success(["prsOnline", true]); // have to broadcast this to all clients
+    ws.success(["prsOnline", true]);
   }
 
   if (ws.identifier === "web") {
     const ctx = await context.get();
-    wsu(ws).success(["revalidateContext", ctx]); // doesn't need to be broadcasted, can be scoped to web
+    ws.success(["revalidateContext", ctx], { scoped: true });
     for (const client of instance.getWss().clients as Set<ExtWebSocket>) {
       if (client.identifier === "physical" && client.alive) {
-        wsu(ws).success(["prsOnline", true]);
+        ws.success(["prsOnline", true]);
       }
     }
   }
@@ -75,14 +74,14 @@ const heartbeat = setInterval(function ping() {
 
 instance.getWss().on("close", () => clearInterval(heartbeat));
 
-app.ws("/ws", withContext, (ws: ExtWebSocket, req) => {
-  // todo: merge wsu directly into ws object (need success and error methods [to single and multiple clients])
-  ws.broadcast = broadcast;
+app.ws("/ws", (ws: ExtWebSocket, req) => {
+  const { success, error, broadcast } = wsUtils(ws);
+  (ws.success = success), (ws.error = error), (ws.broadcast = broadcast);
   ws.on("message", async (msg, isBinary) => {
     req.context = await context.revalidate();
-    if (isBinary) return wsu(ws).error("Binary messages are not supported");
+    if (isBinary) return ws.error("Binary messages are not supported");
     const [event, data] = JSON.parse(msg.toString()) as [string, unknown]; // this could cause trouble
-    if (!Object.keys(socketEvents).includes(event)) return wsu(ws).error("Invalid event");
+    if (!Object.keys(socketEvents).includes(event)) return ws.error("Invalid event");
 
     await socketEvents[event]({ ws, req }, data);
   });

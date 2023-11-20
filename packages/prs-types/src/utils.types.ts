@@ -30,7 +30,29 @@ export type Controller<C extends ControllerConfig> = RequestHandler<C["params"],
 export interface ExtWebSocket extends ws {
   identifier?: string; // your custom property
   alive: boolean;
-  broadcast: <T extends keyof ServerToClientEvents>(
-    data: [T, Parameters<ServerToClientEvents[T]>[0]] | { error: boolean; message: string } | string
-  ) => void;
+  success: ServerToClientSuccessEvent;
+  error: ServerToClientErrorEvent;
+  broadcast: <T extends keyof ServerToClientEvents>(data: ServerToClientEventArgs<T>) => void;
 }
+
+export type WebSocketResponseOptions = {
+  scoped?: boolean;
+};
+
+export type ServerToClientErrorArgs = string;
+
+export type ServerToClientEventArgs<T extends keyof ServerToClientEvents> =
+  | [T, Parameters<ServerToClientEvents[T]>[0]]
+  | ServerToClientErrorArgs;
+
+export type ServerToClientSuccessArgs<T extends keyof ServerToClientEvents> = Exclude<
+  ServerToClientEventArgs<T>,
+  ServerToClientErrorArgs
+>;
+
+export type ServerToClientSuccessEvent = <T extends keyof ServerToClientEvents>(
+  data: ServerToClientSuccessArgs<T>,
+  options?: WebSocketResponseOptions
+) => void;
+
+export type ServerToClientErrorEvent = (message: ServerToClientErrorArgs, options?: WebSocketResponseOptions) => void;

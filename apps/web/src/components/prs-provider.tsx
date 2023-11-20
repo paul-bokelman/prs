@@ -4,6 +4,8 @@ import { TaskMode } from "@/types";
 import { ws } from "@/lib/socket";
 import { qc } from "@/lib/api";
 
+type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
+
 type PRSProviderProps = {
   children: React.ReactNode;
 };
@@ -64,7 +66,7 @@ export function PRSProvider({ children, ...props }: PRSProviderProps) {
       const data = JSON.parse(e.data);
       const [event, args] = data as [
         keyof ServerToClientEvents,
-        ServerToClientEvents[keyof ServerToClientEvents]["arguments"] // better types...
+        UnionToIntersection<Parameters<ServerToClientEvents[keyof ServerToClientEvents]>[number]>
       ];
 
       if (event in events) events[event](args);

@@ -6,7 +6,7 @@ import { QueryClient } from "react-query";
 export const qc = new QueryClient();
 
 export const client = axios.create({
-  baseURL: "http://localhost:8000/api", // TODO: use env
+  baseURL: import.meta.env.VITE_SERVER_URL,
   withCredentials: true,
 });
 

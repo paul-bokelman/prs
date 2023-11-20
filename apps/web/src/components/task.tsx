@@ -3,7 +3,7 @@ import type { GetDay, ServerError, UpdateTask, DeleteTask } from "prs-types";
 import cn from "clsx";
 import { useMutation } from "react-query";
 import { TaskMode } from "@/types";
-import { EditTaskDialog } from "@/components/dialog";
+import { UpdateTaskDialog } from "@/components/dialog";
 import { useToast } from "@/components/ui";
 import { Circle, CheckCircle2, Pencil, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
@@ -95,7 +95,7 @@ export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
           </div>
         </div>
       </div>
-      <EditTaskDialog task={{ id, description }} open={editDialogOpen} close={closeUpdateDialog} />
+      <UpdateTaskDialog task={{ id, description }} open={editDialogOpen} close={closeUpdateDialog} />
     </>
   );
 };

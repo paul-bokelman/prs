@@ -19,7 +19,7 @@ const handler: Controller<DeleteTask> = async (req, res) => {
       ctx.maxIndex = ctx.maxIndex - 1; // should be ok... right?
       if (ctx.currentIndex > ctx.maxIndex) {
         ctx.currentIndex = ctx.currentIndex - 1;
-        ctx.currentId = deletedTask.day.tasks[ctx.currentIndex - 1].id; // TODO: check
+        ctx.currentId = deletedTask.day.tasks[ctx.currentIndex - 1].id;
       }
       return ctx;
     });

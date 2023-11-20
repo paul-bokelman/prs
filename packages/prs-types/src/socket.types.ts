@@ -6,13 +6,11 @@ export type ClientEvent<D, R = void> = (data: D) => Promise<R> | R;
 
 export type ConfirmEvent = Event<undefined>;
 export type MoveIndexEvent = Event<{ direction: "left" | "right" }>;
-export type UpdateCurrentTaskEvent = Event<{ currentTaskIndex: number; currentTaskId: string }>;
 export type GetContextEvent = Event<undefined>;
 
 export interface ClientToServerEvents {
   confirm: ConfirmEvent;
   moveIndex: MoveIndexEvent;
-  updateCurrentTask: UpdateCurrentTaskEvent;
   getContext: GetContextEvent;
 }
 

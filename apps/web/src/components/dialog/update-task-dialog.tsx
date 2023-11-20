@@ -31,9 +31,7 @@ interface Props {
 
 const formSchema = z.object({ description: z.string().max(50, "Too long").min(3, "Too short") });
 
-//todo: rename to update task dialog instead of edit task dialog
-
-export const EditTaskDialog: React.FC<Props> = ({ task, open, close }) => {
+export const UpdateTaskDialog: React.FC<Props> = ({ task, open, close }) => {
   const { revalidateContext } = usePRS();
   const { toast } = useToast();
 
