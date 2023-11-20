@@ -1,6 +1,6 @@
 import { TaskMode } from "@/types";
 import * as React from "react";
-import { useSearchParams, useNavigate} from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery } from "react-query";
 import cn from "clsx";
 import dayjs from "dayjs";
@@ -43,17 +43,20 @@ const App: React.FC<Props> = () => {
   };
 
   function changeQueryDate(direction: "increment" | "decrement") {
-    const newDate = dayjs(date as string).add(direction === "increment" ? 1 : -1, "day").format("YYYY-MM-DD");
+    const newDate = dayjs(date as string)
+      .add(direction === "increment" ? 1 : -1, "day")
+      .format("YYYY-MM-DD");
     params.set("date", newDate);
     navigate(`/?${params.toString()}`);
+    sfx.click.play();
   }
 
   React.useEffect(() => {
-    if(params.get("date") === null) {
+    if (params.get("date") === null) {
       params.set("date", dayjs().format("YYYY-MM-DD"));
     }
     navigate(`/?${params.toString()}`);
-  }, [navigate, params])
+  }, [navigate, params]);
 
   return (
     <>
@@ -82,11 +85,13 @@ const App: React.FC<Props> = () => {
               </TabsList>
             </Tabs>
             <div className="flex items-center gap-4">
-              <Button variant="outline" size="icon" onClick={() => changeQueryDate('decrement')}>
+              <Button variant="outline" size="icon" onClick={() => changeQueryDate("decrement")}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className={cn({'text-muted-foreground': dayjs(date).isSame(dayjs(), 'day')}, 'text-sm')}>{dayjs(date).format('MMM DD')}</span>
-              <Button variant="outline" size="icon" onClick={() => changeQueryDate('increment')}>
+              <span className={cn({ "text-muted-foreground": dayjs(date).isSame(dayjs(), "day") }, "text-sm")}>
+                {dayjs(date).format("MMM DD")}
+              </span>
+              <Button variant="outline" size="icon" onClick={() => changeQueryDate("increment")}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
@@ -106,7 +111,9 @@ const App: React.FC<Props> = () => {
                   </span>
                 ))}
               </div>
-              {!day.tasks.length && <span>No tasks</span>}
+              {!day.tasks.length && (
+                <span className="text-xs text-muted-foreground">No tasks currently, create some!</span>
+              )}
               <div className="grid grid-cols-3 gap-1">
                 {day.tasks.map((task, i) => (
                   <Task key={i} {...task} mode={taskMode} selected={online && currentTaskIndex === i} />
@@ -114,7 +121,9 @@ const App: React.FC<Props> = () => {
               </div>
             </>
           ) : (
-            <span className={cn({"text-red-500": status === "error"}, "text-xs text-muted-foreground")}>{status === "error" ? "Something went wrong" : "Loading tasks..."}</span>
+            <span className={cn({ "text-red-500": status === "error" }, "text-xs text-muted-foreground")}>
+              {status === "error" ? "Something went wrong" : "Loading tasks..."}
+            </span>
           )}
         </div>
         <div className="absolute bottom-20 left-20 flex items-center gap-6">
@@ -125,7 +134,11 @@ const App: React.FC<Props> = () => {
           {day?.stats ? (
             <div className="flex items-center gap-3">
               {/* this is kinda messy, should it be abstracted or just expanded? */}
-              {[`⚡️ ${day.stats.streak}`, `🏆 ${day.stats.totalCompleted}`, `${day.stats.ratio.incline ? "📈": "📉"} ${day.stats.ratio.value}`].map((value) => (
+              {[
+                `⚡️ ${day.stats.streak}`,
+                `🏆 ${day.stats.totalCompleted}`,
+                `${day.stats.ratio.incline ? "📈" : "📉"} ${day.stats.ratio.value}`,
+              ].map((value) => (
                 <span key={value} className="text-xs leading-7 text-muted-foreground">
                   {value}
                 </span>

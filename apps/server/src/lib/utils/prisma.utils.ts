@@ -8,10 +8,14 @@ export const getDay = async (incomingDate: Date | string = new Date()): Promise<
   const endOfDay = date.endOf("day").toDate();
 
   try {
-    const day = await prisma.day.findFirstOrThrow({
+    let day = await prisma.day.findFirst({
       where: { date: { gte: startOfDay, lte: endOfDay } },
       include: { tasks: true },
     });
+
+    if (!day) {
+      day = await prisma.day.create({ data: { date: date.toDate() }, include: { tasks: true } });
+    }
 
     day.tasks.sort((t1, t2) => {
       // should this be in controller?
@@ -22,14 +26,13 @@ export const getDay = async (incomingDate: Date | string = new Date()): Promise<
 
     return day;
   } catch (e) {
-    return null;
+    throw new Error("Failed to get current day.");
   }
 };
 
 export const getCurrentTaskByIndex = async (currentIndex: number): Promise<Task | null> => {
   const day = await getDay();
   if (!day) return null;
-  console.log(day.tasks);
   return day.tasks[currentIndex];
 };
 
