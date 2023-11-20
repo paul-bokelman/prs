@@ -5,7 +5,4 @@ export const socketEvents = {
   moveIndex: moveIndexEvent,
   updateCurrentTask: updateCurrentTaskEvent,
   getContext: getContext,
-  // updateContext: updateContextEvent,
 };
-
-// update context event...

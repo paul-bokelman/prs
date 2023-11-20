@@ -29,6 +29,7 @@ export type Controller<C extends ControllerConfig> = RequestHandler<C["params"],
 
 export interface ExtWebSocket extends ws {
   identifier?: string; // your custom property
+  alive: boolean;
   broadcast: <T extends keyof ServerToClientEvents>(
     data: [T, Parameters<ServerToClientEvents[T]>[0]] | { error: boolean; message: string } | string
   ) => void;

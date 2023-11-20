@@ -31,11 +31,15 @@ app.use(cors({ origin: true, credentials: true }));
 
 app.use("/api", services);
 
+//! WSU should exist on ws
+
 instance.getWss().on("connection", async (ws: ExtWebSocket, req) => {
   if (req.url.includes("?client=")) {
     const identifier = req.url.split("?client=")[1];
     ws.identifier = identifier;
   }
+
+  console.log("connection:", ws.identifier);
 
   if (ws.identifier === "physical") {
     wsu(ws).success(["prsOnline", true]); // have to broadcast this to all clients
@@ -43,11 +47,33 @@ instance.getWss().on("connection", async (ws: ExtWebSocket, req) => {
 
   if (ws.identifier === "web") {
     const ctx = await context.get();
-    wsu(ws).success(["revalidateContext", ctx]); // doesn't need to be broadcasted
+    wsu(ws).success(["revalidateContext", ctx]); // doesn't need to be broadcasted, can be scoped to web
+    for (const client of instance.getWss().clients as Set<ExtWebSocket>) {
+      if (client.identifier === "physical" && client.alive) {
+        wsu(ws).success(["prsOnline", true]);
+      }
+    }
   }
 
-  ws.on("close", (e) => wsu(ws).success(["prsOnline", false]));
+  ws.on("pong", () => (ws.alive = true));
+
+  ws.on("close", (e) => {
+    console.log("disconnected:", ws.identifier);
+    if (ws.identifier === "physical") {
+      broadcast(["prsOnline", false]);
+    }
+  });
 });
+
+const heartbeat = setInterval(function ping() {
+  (instance.getWss().clients as Set<ExtWebSocket>).forEach((client) => {
+    if (client.alive === false) return client.terminate();
+    client.alive = false;
+    client.ping();
+  });
+}, 1000); // change time depending on desired response time
+
+instance.getWss().on("close", () => clearInterval(heartbeat));
 
 app.ws("/ws", withContext, (ws: ExtWebSocket, req) => {
   // todo: merge wsu directly into ws object (need success and error methods [to single and multiple clients])
