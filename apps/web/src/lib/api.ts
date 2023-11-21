@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ControllerConfig, GetDay, DeleteTask, UpdateTask, CreateTask } from "prs-types";
+import { ControllerConfig, GetDay, DeleteTask, UpdateTask, CreateTask } from "prs-common";
 import { QueryClient } from "react-query";
 // import dayjs from "dayjs";
 

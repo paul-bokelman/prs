@@ -1,11 +1,12 @@
-import type { Controller, GetDay } from "prs-types";
+import type { Controller, GetDay } from "prs-common";
 import { StatusCodes } from "http-status-codes";
 import dayjs from "dayjs";
 import { prisma } from "../../../config";
 import { formatResponse, handleControllerError } from "../../../lib/utils";
 
-const handler: Controller<GetDay> = async (req, res) => {
+export const getDay: Controller<GetDay> = async (req, res) => {
   const { success, error } = formatResponse<GetDay>(res);
+
   try {
     const day = await prisma.utils.getDay(req.query.date);
 
@@ -42,5 +43,3 @@ const handler: Controller<GetDay> = async (req, res) => {
     return handleControllerError(e, res);
   }
 };
-
-export const getDay = { handler };

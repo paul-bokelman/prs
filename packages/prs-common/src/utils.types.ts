@@ -5,9 +5,9 @@ import * as ws from "ws";
 
 export interface PRSContext {
   currentDayId: string;
-  currentId: string | null;
-  currentIndex: number | null;
-  maxIndex: number | null;
+  currentId: string;
+  currentIndex: number;
+  maxIndex: number;
   mode: "default" | "delete";
 }
 
@@ -19,10 +19,10 @@ export interface ServerError {
 }
 
 export type ControllerConfig = {
-  params: Record<string, any>;
-  body: Record<string, any>;
-  query: Record<string, any>;
-  payload: Record<string, any>;
+  params: unknown;
+  body: unknown;
+  query: unknown;
+  payload: unknown;
 };
 
 export type Controller<C extends ControllerConfig> = RequestHandler<C["params"], C["payload"], C["body"], C["query"]>;
@@ -56,3 +56,7 @@ export type ServerToClientSuccessEvent = <T extends keyof ServerToClientEvents>(
 ) => void;
 
 export type ServerToClientErrorEvent = (message: ServerToClientErrorArgs, options?: WebSocketResponseOptions) => void;
+
+export type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never) extends (k: infer I) => void
+  ? I
+  : never;

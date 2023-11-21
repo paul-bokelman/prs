@@ -1,8 +1,9 @@
-import type { UpdateTask, ServerError } from "prs-types";
+import type { UpdateTask, ServerError } from "prs-common";
 import { useMutation } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { schemas } from "prs-common";
 import { usePRS } from "@/components/prs-provider";
 import { api } from "@/lib/api";
 import {
@@ -29,7 +30,7 @@ interface Props {
   close: () => void;
 }
 
-const formSchema = z.object({ description: z.string().max(50, "Too long").min(3, "Too short") });
+const schema = schemas.task.update.shape.body;
 
 export const UpdateTaskDialog: React.FC<Props> = ({ task, open, close }) => {
   const { revalidateContext } = usePRS();
@@ -43,13 +44,13 @@ export const UpdateTaskDialog: React.FC<Props> = ({ task, open, close }) => {
     },
   });
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
     defaultValues: { description: task.description },
   });
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
-    updateTask.mutate({ id: task.id, data });
+  const onSubmit = async (data: z.infer<typeof schema>) => {
+    await updateTask.mutateAsync({ id: task.id, data });
     close();
   };
 

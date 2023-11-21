@@ -1,10 +1,11 @@
-import type { ServerError, CreateTask } from "prs-types";
+import type { ServerError, CreateTask } from "prs-common";
 import * as React from "react";
 import { useSearchParams } from "react-router-dom";
 import { useMutation } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { schemas } from "prs-common";
 import {
   useToast,
   Dialog,
@@ -31,11 +32,7 @@ interface Props {
   close: () => void;
 }
 
-const formSchema = z.object({
-  description: z.string().max(50, "Too long").min(3, "Too short"),
-  complete: z.boolean().default(false),
-  reoccurring: z.boolean().default(false),
-});
+const schema = schemas.task.create.shape.body;
 
 export const CreateTaskDialog: React.FC<Props> = ({ open, close }) => {
   const { toast } = useToast();
@@ -53,13 +50,18 @@ export const CreateTaskDialog: React.FC<Props> = ({ open, close }) => {
     },
   });
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {description: "",complete: false,reoccurring: false},
+  const form = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      description: "",
+      complete: false,
+      reoccurring: false,
+      day: dayjs(params.get("date")).format("YYYY-MM-DD"),
+    },
   });
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
-    createTask.mutate({ data: { day: dayjs(params.get('date')).format("YYYY-MM-DD"), ...data } });
+  const onSubmit = async (data: z.infer<typeof schema>) => {
+    await createTask.mutateAsync({ data });
     close();
   };
 

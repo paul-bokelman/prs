@@ -1,4 +1,4 @@
-import type { ClientToServerEvents } from "prs-types";
+import type { ClientToServerEvents } from "prs-common";
 
 interface ExtendedWebSocket extends WebSocket {
   dispatch: WebSocketSend;
@@ -11,7 +11,7 @@ type WebSocketSend = <T extends keyof ClientToServerEvents>(
 export const ws = new WebSocket("ws://localhost:8000/ws?client=web") as ExtendedWebSocket;
 
 const dispatch: WebSocketSend = (message) => {
-  ws.send(JSON.stringify(message));
+  return ws.send(JSON.stringify(message));
 };
 
 ws.dispatch = dispatch;

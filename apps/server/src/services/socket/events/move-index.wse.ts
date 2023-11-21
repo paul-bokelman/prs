@@ -1,4 +1,4 @@
-import type { MoveIndexEvent } from "prs-types";
+import type { MoveIndexEvent } from "prs-common";
 import { context } from "../../../lib/context";
 
 export const moveIndexEvent: MoveIndexEvent = async ({ ws, req }, { direction }) => {

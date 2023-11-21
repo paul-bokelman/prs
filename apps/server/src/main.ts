@@ -1,4 +1,4 @@
-import type { ExtWebSocket, PRSContext } from "prs-types";
+import type { UnionToIntersection, ClientToServerEvents, ExtWebSocket, PRSContext } from "prs-common";
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
@@ -33,7 +33,7 @@ instance.getWss().on("connection", async (ws: ExtWebSocket, req) => {
   const { success, error, broadcast } = wsUtils(ws);
   (ws.success = success), (ws.error = error), (ws.broadcast = broadcast);
 
-  if (req.url.includes("?client=")) {
+  if (req.url?.includes("?client=")) {
     const identifier = req.url.split("?client=")[1];
     ws.identifier = identifier;
   }
@@ -74,15 +74,20 @@ const heartbeat = setInterval(function ping() {
 
 instance.getWss().on("close", () => clearInterval(heartbeat));
 
-app.ws("/ws", (ws: ExtWebSocket, req) => {
+app.ws("/ws", (websocket, req) => {
+  let ws: ExtWebSocket = websocket as ExtWebSocket; // why can't I cast websocket directly to ExtWebSocket??
   const { success, error, broadcast } = wsUtils(ws);
   (ws.success = success), (ws.error = error), (ws.broadcast = broadcast);
   ws.on("message", async (msg, isBinary) => {
-    req.context = await context.revalidate();
+    const revalidatedContext = await context.revalidate();
+    if (!revalidatedContext) throw new Error("Failed to revalidate context");
+    req.context = revalidatedContext;
     if (isBinary) return ws.error("Binary messages are not supported");
-    const [event, data] = JSON.parse(msg.toString()) as [string, unknown]; // this could cause trouble
+    const [event, data] = JSON.parse(msg.toString()) as [
+      keyof ClientToServerEvents,
+      UnionToIntersection<Parameters<ClientToServerEvents[keyof ClientToServerEvents]>[number]>
+    ];
     if (!Object.keys(socketEvents).includes(event)) return ws.error("Invalid event");
-
     await socketEvents[event]({ ws, req }, data);
   });
 });

@@ -1,10 +1,10 @@
-import type { Controller, DeleteTask } from "prs-types";
+import type { Controller, DeleteTask } from "prs-common";
 import { StatusCodes } from "http-status-codes";
 import { prisma } from "../../../config";
 import { formatResponse, handleControllerError } from "../../../lib/utils";
 import { context } from "../../../lib";
 
-const handler: Controller<DeleteTask> = async (req, res) => {
+export const deleteTask: Controller<DeleteTask> = async (req, res) => {
   const { success, error } = formatResponse<DeleteTask>(res);
   try {
     const task = await prisma.task.findUnique({ where: { id: req.params.id } });
@@ -29,5 +29,3 @@ const handler: Controller<DeleteTask> = async (req, res) => {
     return handleControllerError(e, res);
   }
 };
-
-export const deleteTask = { handler };

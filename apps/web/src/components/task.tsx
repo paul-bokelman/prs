@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { GetDay, ServerError, UpdateTask, DeleteTask } from "prs-types";
+import type { GetDay, ServerError, UpdateTask, DeleteTask } from "prs-common";
 import cn from "clsx";
 import { useMutation } from "react-query";
 import { TaskMode } from "@/types";

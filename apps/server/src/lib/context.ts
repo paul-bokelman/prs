@@ -1,4 +1,4 @@
-import type { PRSContext } from "prs-types";
+import type { PRSContext } from "prs-common";
 import fs from "fs";
 import { prisma } from "../config";
 
@@ -9,6 +9,12 @@ export const setContext = async (context: PRSContext) => {
 };
 
 export const getContext = async (): Promise<PRSContext> => {
+  if (!fs.existsSync(CONTEXT_FILE)) {
+    await fs.promises.writeFile(
+      CONTEXT_FILE,
+      JSON.stringify({ currentDayId: "", currentId: "", currentIndex: 0, maxIndex: 0, mode: "default" })
+    );
+  }
   const context = await fs.promises.readFile(CONTEXT_FILE, "utf-8");
   return JSON.parse(context) as PRSContext;
 };
@@ -27,7 +33,6 @@ export const destroyContext = async () => {
 
 export const revalidateContext = async () => {
   let ctx = await getContext();
-  if (!fs.existsSync(CONTEXT_FILE)) return;
   const day = await prisma.utils.getDay();
   if (day) {
     ctx.maxIndex = day.tasks.length - 1;
@@ -40,6 +45,7 @@ export const revalidateContext = async () => {
     return ctx;
   } catch (error) {
     console.log("Failed to create context file: ", error);
+    throw new Error("Failed to create context file");
   }
 };
 

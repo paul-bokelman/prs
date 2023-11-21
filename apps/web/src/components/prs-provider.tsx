@@ -1,10 +1,8 @@
-import type { ServerToClientEvents, PRSOnlineEvent, RevalidateContextEvent } from "prs-types";
+import type { UnionToIntersection, ServerToClientEvents, PRSOnlineEvent, RevalidateContextEvent } from "prs-common";
 import * as React from "react";
 import { TaskMode } from "@/types";
 import { ws } from "@/lib/socket";
 import { qc } from "@/lib/api";
-
-type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
 
 type PRSProviderProps = {
   children: React.ReactNode;

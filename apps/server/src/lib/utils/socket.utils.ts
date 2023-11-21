@@ -5,7 +5,7 @@ import type {
   ServerToClientEventArgs,
   ServerToClientSuccessEvent,
   ServerToClientErrorEvent,
-} from "prs-types";
+} from "prs-common";
 import { instance } from "../../main";
 
 const broadcast = <T extends keyof ServerToClientEvents>(data: ServerToClientEventArgs<T>) =>

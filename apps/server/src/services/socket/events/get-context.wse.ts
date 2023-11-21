@@ -1,6 +1,6 @@
-import type { GetContextEvent } from "prs-types";
+import type { GetContextEvent } from "prs-common";
 
 //? rename to updateContextEvent? or requestContext
 export const getContext: GetContextEvent = async ({ ws, req }) => {
-  return ws.broadcast(["revalidateContext", req.context]);
+  return ws.success(["revalidateContext", req.context], { scoped: true });
 };

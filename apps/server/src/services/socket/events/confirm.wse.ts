@@ -1,4 +1,4 @@
-import type { ConfirmEvent } from "prs-types";
+import type { ConfirmEvent } from "prs-common";
 import { prisma } from "../../../config";
 import { context } from "../../../lib/context";
 

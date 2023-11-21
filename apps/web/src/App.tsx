@@ -10,7 +10,6 @@ import { Button, Tabs, TabsList, TabsTrigger } from "@/components/ui";
 import { CreateTaskDialog } from "@/components/dialog";
 import { api } from "@/lib/api";
 import { sfx } from "@/lib/sfx";
-import { ws } from "@/lib/socket";
 import { usePRS, Countdown } from "@/components";
 
 interface Props {}
@@ -34,14 +33,6 @@ const App: React.FC<Props> = () => {
 
   const closeCreateDialog = () => setCreateDialogOpen(false);
 
-  const sendDirection = (direction: "left" | "right") => {
-    ws.dispatch(["moveIndex", { direction }]);
-  };
-
-  const sendConfirm = () => {
-    ws.dispatch(["confirm"]);
-  };
-
   function changeQueryDate(direction: "increment" | "decrement") {
     const newDate = dayjs(date as string)
       .add(direction === "increment" ? 1 : -1, "day")
@@ -60,9 +51,6 @@ const App: React.FC<Props> = () => {
 
   return (
     <>
-      <Button onClick={() => sendDirection("left")}>Left</Button>
-      <Button onClick={() => sendConfirm()}>Confirm</Button>
-      <Button onClick={() => sendDirection("right")}>Right</Button>
       <div className="relative w-screen h-screen flex flex-col gap-2 p-20">
         <div className="relative flex flex-col">
           <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">Physical Reward System</h1>
