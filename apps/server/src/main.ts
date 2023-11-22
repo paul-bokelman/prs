@@ -46,7 +46,7 @@ instance.getWss().on("connection", async (ws: ExtWebSocket, req) => {
 
   if (ws.identifier === "web") {
     const ctx = await context.get();
-    ws.success(["revalidateContext", ctx], { scoped: true });
+    ws.success(["revalidateContext", { ctx }], { scoped: true });
     for (const client of instance.getWss().clients as Set<ExtWebSocket>) {
       if (client.identifier === "physical" && client.alive) {
         ws.success(["prsOnline", true]);

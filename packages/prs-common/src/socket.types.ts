@@ -15,7 +15,10 @@ export interface ClientToServerEvents {
 }
 
 export type PRSOnlineEvent = ClientEvent<boolean>;
-export type RevalidateContextEvent = ClientEvent<PRSContext>;
+export type RevalidateContextEvent = ClientEvent<{
+  ctx: PRSContext;
+  trigger?: "confirm-default" | "confirm-delete" | "moveIndex";
+}>;
 
 export interface ServerToClientEvents {
   prsOnline: PRSOnlineEvent;

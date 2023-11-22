@@ -3,6 +3,7 @@ import * as React from "react";
 import { TaskMode } from "@/types";
 import { ws } from "@/lib/socket";
 import { qc } from "@/lib/api";
+import { sfx } from "@/lib/sfx";
 
 type PRSProviderProps = {
   children: React.ReactNode;
@@ -42,8 +43,12 @@ export function PRSProvider({ children, ...props }: PRSProviderProps) {
     ws.dispatch(["getContext"]);
   };
 
-  const revalidateContextEvent: RevalidateContextEvent = (ctx) => {
-    //? play sound on confirm? (requires action name prs->server->client)
+  const revalidateContextEvent: RevalidateContextEvent = ({ ctx, trigger }) => {
+    if (typeof trigger !== "undefined") {
+      if (trigger === "moveIndex") sfx.select.play();
+      if (trigger === "confirm-default") sfx.complete().play();
+      if (trigger === "confirm-delete") sfx.delete().play();
+    }
     setCurrentTaskId(ctx.currentId as string);
     setCurrentTaskIndex(ctx.currentIndex as number);
     setCurrentMode(ctx.mode as Exclude<TaskMode, TaskMode.EDIT>);

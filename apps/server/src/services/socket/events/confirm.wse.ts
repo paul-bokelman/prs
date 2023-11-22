@@ -15,10 +15,10 @@ export const confirmEvent: ConfirmEvent = async ({ ws, req }) => {
     await prisma.task.update({ where: { id: currentId }, data: { complete: { set: !task.complete } } });
 
     const ctx = await context.revalidate();
-    return ws.success(["revalidateContext", ctx]);
+    return ws.success(["revalidateContext", { ctx, trigger: "confirm-default" }]);
   }
 
   await prisma.task.delete({ where: { id: currentId } });
   const ctx = await context.revalidate();
-  return ws.success(["revalidateContext", ctx]);
+  return ws.success(["revalidateContext", { ctx, trigger: "confirm-delete" }]);
 };

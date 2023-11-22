@@ -16,5 +16,5 @@ export const moveIndexEvent: MoveIndexEvent = async ({ ws, req }, { direction })
   req.context.currentIndex = newIndex;
   await context.set(req.context);
 
-  return ws.success(["revalidateContext", req.context]);
+  return ws.success(["revalidateContext", { ctx: req.context, trigger: "moveIndex" }]);
 };
