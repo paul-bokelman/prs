@@ -18,7 +18,7 @@ type Props = GetDay["payload"]["tasks"][number] & {
 export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
   const { toast } = useToast();
   const { revalidateContext } = usePRS();
-  const [editDialogOpen, setEditDialogOpen] = React.useState<boolean>(false);
+  const [updateDialogOpen, setUpdateDialogOpen] = React.useState<boolean>(false);
   const [onHover, setOnHover] = React.useState<boolean>(false);
 
   const { id, description, complete } = task;
@@ -45,8 +45,8 @@ export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
     },
   });
 
-  const closeUpdateDialog = () => setEditDialogOpen(false);
-  const openUpdateDialog = () => setEditDialogOpen(true);
+  const closeUpdateDialog = () => setUpdateDialogOpen(false);
+  const openUpdateDialog = () => setUpdateDialogOpen(true);
 
   const handleInteraction = () => {
     if (mode === TaskMode.DEFAULT) return updateTask.mutate({ id, data: { complete: !complete } });
@@ -95,7 +95,7 @@ export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
           </div>
         </div>
       </div>
-      <UpdateTaskDialog task={{ id, description }} open={editDialogOpen} close={closeUpdateDialog} />
+      <UpdateTaskDialog task={{ id, description }} open={updateDialogOpen} close={closeUpdateDialog} />
     </>
   );
 };

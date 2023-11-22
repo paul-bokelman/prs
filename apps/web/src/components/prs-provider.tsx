@@ -33,7 +33,7 @@ const initialState: PRSProviderState = {
 
 const PRSProviderContext = React.createContext<PRSProviderState>(initialState);
 
-export function PRSProvider({ children, ...props }: PRSProviderProps) {
+export function PRSProvider({ children }: PRSProviderProps) {
   const [online, setOnline] = React.useState<boolean>(false);
   const [currentTaskId, setCurrentTaskId] = React.useState<string>("");
   const [currentMode, setCurrentMode] = React.useState<Exclude<TaskMode, TaskMode.EDIT>>(TaskMode.DEFAULT);
@@ -89,11 +89,7 @@ export function PRSProvider({ children, ...props }: PRSProviderProps) {
     revalidateContext,
   };
 
-  return (
-    <PRSProviderContext.Provider {...props} value={value}>
-      {children}
-    </PRSProviderContext.Provider>
-  );
+  return <PRSProviderContext.Provider value={value}>{children}</PRSProviderContext.Provider>;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

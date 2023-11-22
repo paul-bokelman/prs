@@ -1,4 +1,5 @@
 import type { UpdateTask, ServerError } from "prs-common";
+import * as React from "react";
 import { useMutation } from "react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -54,6 +55,11 @@ export const UpdateTaskDialog: React.FC<Props> = ({ task, open, close }) => {
     close();
   };
 
+  // hate this block...
+  React.useEffect(() => {
+    form.setValue("description", task.description);
+  }, [form, task]);
+
   return (
     <Dialog open={open} defaultOpen={false}>
       <DialogContent onEscapeKeyDown={close} onInteractOutside={close}>
@@ -67,11 +73,11 @@ export const UpdateTaskDialog: React.FC<Props> = ({ task, open, close }) => {
               <FormField
                 control={form.control}
                 name="description"
-                render={({ field }) => (
+                render={({ field, formState }) => (
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Input placeholder={task.description} {...field} />
+                      <Input placeholder={formState.defaultValues?.description} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
