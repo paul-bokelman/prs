@@ -22,6 +22,7 @@ const App: React.FC<Props> = () => {
   const [createDialogOpen, setCreateDialogOpen] = React.useState<boolean>(false);
 
   const date = params.get("date");
+
   const { data: day, status } = useQuery(["currentDay", date], () => api.days.get(date as string));
 
   const closeCreateDialog = () => setCreateDialogOpen(false);
@@ -104,13 +105,7 @@ const App: React.FC<Props> = () => {
               )}
               <div className="grid grid-cols-3 gap-1">
                 {day.tasks.map((task, i) => (
-                  <Task
-                    key={i}
-                    {...task}
-                    mode={taskMode}
-                    selected={online && currentTaskIndex === i}
-                    // useUpdateTaskDialog={useUpdateTaskDialog}
-                  />
+                  <Task key={i} {...task} mode={taskMode} selected={online && currentTaskIndex === i} />
                 ))}
               </div>
             </>

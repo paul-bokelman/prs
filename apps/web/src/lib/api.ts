@@ -23,12 +23,6 @@ const deleteTask = (id: string) => post<DeleteTask>(`/tasks/${id}/delete`);
 const createTask = (data: CreateTask["body"]) => post<CreateTask>(`/tasks/create`, data);
 
 export const api = {
-  days: {
-    get: getDay,
-  },
-  tasks: {
-    update: updateTask,
-    delete: deleteTask,
-    create: createTask,
-  },
+  days: { get: getDay },
+  tasks: { update: updateTask, delete: deleteTask, create: createTask },
 };

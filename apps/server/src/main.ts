@@ -38,8 +38,6 @@ instance.getWss().on("connection", async (ws: ExtWebSocket, req) => {
     ws.identifier = identifier;
   }
 
-  console.log("connection:", ws.identifier);
-
   if (ws.identifier === "physical") {
     ws.success(["prsOnline", true]);
   }
@@ -57,7 +55,6 @@ instance.getWss().on("connection", async (ws: ExtWebSocket, req) => {
   ws.on("pong", () => (ws.alive = true));
 
   ws.on("close", (e) => {
-    console.log("disconnected:", ws.identifier);
     if (ws.identifier === "physical") {
       broadcast(["prsOnline", false]);
     }

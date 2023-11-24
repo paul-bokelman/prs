@@ -1,7 +1,7 @@
 import type { UpdateTask, ServerError } from "prs-common";
 import * as React from "react";
 import { useMutation } from "react-query";
-import { useForm } from "react-hook-form";
+import { type SubmitHandler, type SubmitErrorHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { schemas } from "prs-common";
@@ -31,6 +31,8 @@ interface Props {
   close: () => void;
 }
 
+type FormValues = z.infer<typeof schema>;
+
 const schema = schemas.task.update.shape.body;
 
 export const UpdateTaskDialog: React.FC<Props> = ({ task, open, close }) => {
@@ -45,14 +47,18 @@ export const UpdateTaskDialog: React.FC<Props> = ({ task, open, close }) => {
     },
   });
 
-  const form = useForm<z.infer<typeof schema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { description: task.description },
+    defaultValues: { description: task.description, complete: false, reoccurring: false, dayId: undefined },
   });
 
-  const onSubmit = async (data: z.infer<typeof schema>) => {
+  const validSubmission: SubmitHandler<FormValues> = async (data) => {
     await updateTask.mutateAsync({ id: task.id, data });
     close();
+  };
+
+  const invalidSubmission: SubmitErrorHandler<FormValues> = (errors) => {
+    console.log(errors);
   };
 
   // hate this block...
@@ -69,15 +75,15 @@ export const UpdateTaskDialog: React.FC<Props> = ({ task, open, close }) => {
         </DialogHeader>
         <div className="flex flex-col gap-2 mt-2">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(validSubmission, invalidSubmission)} className="space-y-8">
               <FormField
                 control={form.control}
                 name="description"
-                render={({ field, formState }) => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Input placeholder={formState.defaultValues?.description} {...field} />
+                      <Input placeholder={task.description} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -88,7 +94,7 @@ export const UpdateTaskDialog: React.FC<Props> = ({ task, open, close }) => {
                 {updateTask.isLoading ? (
                   <>
                     <Loader className="mr-2 h-4 w-4 animate-spin" />
-                    Please wait
+                    Updating
                   </>
                 ) : (
                   "Update"
