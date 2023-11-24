@@ -34,3 +34,8 @@ yarn-error.log*
 
 # vercel
 .vercel
+apps/server/context.json
+
+# hardware
+.vscode
+hardware/environment.h

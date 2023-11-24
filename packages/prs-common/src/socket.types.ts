@@ -6,18 +6,19 @@ export type ClientEvent<D, R = void> = (data: D) => Promise<R> | R;
 
 export type ConfirmEvent = Event<undefined>;
 export type MoveIndexEvent = Event<{ direction: "left" | "right" }>;
-export type UpdateCurrentTaskEvent = Event<{ currentTaskIndex: number; currentTaskId: string }>;
 export type GetContextEvent = Event<undefined>;
 
 export interface ClientToServerEvents {
   confirm: ConfirmEvent;
   moveIndex: MoveIndexEvent;
-  updateCurrentTask: UpdateCurrentTaskEvent;
   getContext: GetContextEvent;
 }
 
 export type PRSOnlineEvent = ClientEvent<boolean>;
-export type RevalidateContextEvent = ClientEvent<PRSContext>;
+export type RevalidateContextEvent = ClientEvent<{
+  ctx: PRSContext;
+  trigger?: "confirm-default" | "confirm-delete" | "moveIndex";
+}>;
 
 export interface ServerToClientEvents {
   prsOnline: PRSOnlineEvent;

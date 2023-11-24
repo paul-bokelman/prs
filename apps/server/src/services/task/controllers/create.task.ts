@@ -1,12 +1,13 @@
-import type { Controller, CreateTask } from "prs-types";
+import type { Controller, CreateTask } from "prs-common";
 import { StatusCodes } from "http-status-codes";
 import dayjs from "dayjs";
 import { prisma } from "../../../config";
 import { context } from "../../../lib";
 import { formatResponse, handleControllerError } from "../../../lib/utils";
 
-const handler: Controller<CreateTask> = async (req, res) => {
+export const createTask: Controller<CreateTask> = async (req, res) => {
   const { success, error } = formatResponse<CreateTask>(res);
+
   try {
     const { day, ...taskData } = req.body;
 
@@ -54,5 +55,3 @@ const handler: Controller<CreateTask> = async (req, res) => {
     return handleControllerError(e, res);
   }
 };
-
-export const createTask = { handler };

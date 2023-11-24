@@ -1,13 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import {createBrowserRouter,RouterProvider} from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClientProvider } from "react-query";
-import App from "./App.tsx";
+import App from "./app.tsx";
 import "./styles/globals.css";
 import { ThemeProvider, PRSProvider } from "@/components/";
 import { Toaster } from "@/components/ui";
 import { qc } from "@/lib/api";
-
 
 const router = createBrowserRouter([
   {
@@ -21,7 +20,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={qc}>
       <PRSProvider>
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <RouterProvider router={router} />
+          <RouterProvider router={router} />
           <Toaster />
         </ThemeProvider>
       </PRSProvider>

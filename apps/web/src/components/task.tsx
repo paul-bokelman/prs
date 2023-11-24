@@ -1,9 +1,9 @@
 import * as React from "react";
-import type { GetDay, ServerError, UpdateTask, DeleteTask } from "prs-types";
+import type { GetDay, ServerError, UpdateTask, DeleteTask } from "prs-common";
 import cn from "clsx";
 import { useMutation } from "react-query";
 import { TaskMode } from "@/types";
-import { EditTaskDialog } from "@/components/dialog";
+import { UpdateTaskDialog } from "@/components/dialog";
 import { useToast } from "@/components/ui";
 import { Circle, CheckCircle2, Pencil, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
@@ -18,7 +18,7 @@ type Props = GetDay["payload"]["tasks"][number] & {
 export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
   const { toast } = useToast();
   const { revalidateContext } = usePRS();
-  const [editDialogOpen, setEditDialogOpen] = React.useState<boolean>(false);
+  const [updateDialogOpen, setUpdateDialogOpen] = React.useState<boolean>(false);
   const [onHover, setOnHover] = React.useState<boolean>(false);
 
   const { id, description, complete } = task;
@@ -45,8 +45,8 @@ export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
     },
   });
 
-  const closeUpdateDialog = () => setEditDialogOpen(false);
-  const openUpdateDialog = () => setEditDialogOpen(true);
+  const closeUpdateDialog = () => setUpdateDialogOpen(false);
+  const openUpdateDialog = () => setUpdateDialogOpen(true);
 
   const handleInteraction = () => {
     if (mode === TaskMode.DEFAULT) return updateTask.mutate({ id, data: { complete: !complete } });
@@ -95,7 +95,7 @@ export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
           </div>
         </div>
       </div>
-      <EditTaskDialog task={{ id, description }} open={editDialogOpen} close={closeUpdateDialog} />
+      <UpdateTaskDialog task={{ id, description }} open={updateDialogOpen} close={closeUpdateDialog} />
     </>
   );
 };

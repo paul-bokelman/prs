@@ -1,8 +1,10 @@
-import type { UpdateTask, ServerError } from "prs-types";
+import type { UpdateTask, ServerError } from "prs-common";
+import * as React from "react";
 import { useMutation } from "react-query";
-import { useForm } from "react-hook-form";
+import { type SubmitHandler, type SubmitErrorHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { schemas } from "prs-common";
 import { usePRS } from "@/components/prs-provider";
 import { api } from "@/lib/api";
 import {
@@ -29,11 +31,11 @@ interface Props {
   close: () => void;
 }
 
-const formSchema = z.object({ description: z.string().max(50, "Too long").min(3, "Too short") });
+type FormValues = z.infer<typeof schema>;
 
-//todo: rename to update task dialog instead of edit task dialog
+const schema = schemas.task.update.shape.body;
 
-export const EditTaskDialog: React.FC<Props> = ({ task, open, close }) => {
+export const UpdateTaskDialog: React.FC<Props> = ({ task, open, close }) => {
   const { revalidateContext } = usePRS();
   const { toast } = useToast();
 
@@ -45,15 +47,24 @@ export const EditTaskDialog: React.FC<Props> = ({ task, open, close }) => {
     },
   });
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: { description: task.description },
+  const form = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { description: task.description, complete: false, reoccurring: false, dayId: undefined },
   });
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
-    updateTask.mutate({ id: task.id, data });
+  const validSubmission: SubmitHandler<FormValues> = async (data) => {
+    await updateTask.mutateAsync({ id: task.id, data });
     close();
   };
+
+  const invalidSubmission: SubmitErrorHandler<FormValues> = (errors) => {
+    console.log(errors);
+  };
+
+  // hate this block...
+  React.useEffect(() => {
+    form.setValue("description", task.description);
+  }, [form, task]);
 
   return (
     <Dialog open={open} defaultOpen={false}>
@@ -64,7 +75,7 @@ export const EditTaskDialog: React.FC<Props> = ({ task, open, close }) => {
         </DialogHeader>
         <div className="flex flex-col gap-2 mt-2">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(validSubmission, invalidSubmission)} className="space-y-8">
               <FormField
                 control={form.control}
                 name="description"
@@ -83,7 +94,7 @@ export const EditTaskDialog: React.FC<Props> = ({ task, open, close }) => {
                 {updateTask.isLoading ? (
                   <>
                     <Loader className="mr-2 h-4 w-4 animate-spin" />
-                    Please wait
+                    Updating
                   </>
                 ) : (
                   "Update"

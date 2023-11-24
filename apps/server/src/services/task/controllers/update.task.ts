@@ -1,9 +1,9 @@
-import type { Controller, UpdateTask } from "prs-types";
+import type { Controller, UpdateTask } from "prs-common";
 import { StatusCodes } from "http-status-codes";
 import { prisma } from "../../../config";
 import { formatResponse, handleControllerError } from "../../../lib/utils";
 
-const handler: Controller<UpdateTask> = async (req, res) => {
+export const updateTask: Controller<UpdateTask> = async (req, res) => {
   const { success, error } = formatResponse<UpdateTask>(res);
 
   try {
@@ -17,5 +17,3 @@ const handler: Controller<UpdateTask> = async (req, res) => {
     return handleControllerError(e, res);
   }
 };
-
-export const updateTask = { handler };

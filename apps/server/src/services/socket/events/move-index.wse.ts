@@ -1,6 +1,4 @@
-import type { MoveIndexEvent } from "prs-types";
-import { prisma } from "../../../config";
-import { wsu } from "../../../lib/utils";
+import type { MoveIndexEvent } from "prs-common";
 import { context } from "../../../lib/context";
 
 export const moveIndexEvent: MoveIndexEvent = async ({ ws, req }, { direction }) => {
@@ -15,10 +13,8 @@ export const moveIndexEvent: MoveIndexEvent = async ({ ws, req }, { direction })
     newIndex = nextIndex;
   }
 
-  // ? Update currentIndex and currentId in context
-
   req.context.currentIndex = newIndex;
   await context.set(req.context);
 
-  return wsu(ws).success(["revalidateContext", req.context]);
+  return ws.success(["revalidateContext", { ctx: req.context, trigger: "moveIndex" }]);
 };

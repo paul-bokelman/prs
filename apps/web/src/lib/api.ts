@@ -1,12 +1,12 @@
 import axios from "axios";
-import { ControllerConfig, GetDay, DeleteTask, UpdateTask, CreateTask } from "prs-types";
+import { ControllerConfig, GetDay, DeleteTask, UpdateTask, CreateTask } from "prs-common";
 import { QueryClient } from "react-query";
 // import dayjs from "dayjs";
 
 export const qc = new QueryClient();
 
 export const client = axios.create({
-  baseURL: "http://localhost:8000/api", // TODO: use env
+  baseURL: import.meta.env.VITE_SERVER_URL,
   withCredentials: true,
 });
 
@@ -23,12 +23,6 @@ const deleteTask = (id: string) => post<DeleteTask>(`/tasks/${id}/delete`);
 const createTask = (data: CreateTask["body"]) => post<CreateTask>(`/tasks/create`, data);
 
 export const api = {
-  days: {
-    get: getDay,
-  },
-  tasks: {
-    update: updateTask,
-    delete: deleteTask,
-    create: createTask,
-  },
+  days: { get: getDay },
+  tasks: { update: updateTask, delete: deleteTask, create: createTask },
 };

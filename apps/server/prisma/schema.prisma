@@ -11,9 +11,9 @@ model Task {
   id          String   @id @default(cuid())
   description String
   complete    Boolean  @default(false)
-  reoccurring Boolean  @default(false) // how should this be handled? seperated from day?
+  reoccurring Boolean  @default(false) // how should this be handled? seperate from day?
   dayId       String
-  day         Day?     @relation(fields: [dayId], references: [id])
+  day         Day      @relation(fields: [dayId], references: [id]) //! A task should always have a day!
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -25,8 +25,3 @@ model Day {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
-// there should be a day model that has a one to many relationship with tasks to 
-// easily get all tasks for a day and have relative index ordering
-
-// model Day {}

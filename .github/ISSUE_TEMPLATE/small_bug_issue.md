@@ -14,5 +14,4 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Vel quam elementum pulvinar etiam. Ut porttitor leo a diam sollicitudin tempor id.
 
----
-Parent: [Epic: EPIC_TITLE](#0)
+Parent: #0

@@ -1,9 +1,9 @@
-import type { ServerToClientEvents, PRSOnlineEvent, RevalidateContextEvent } from "prs-types";
+import type { UnionToIntersection, ServerToClientEvents, PRSOnlineEvent, RevalidateContextEvent } from "prs-common";
 import * as React from "react";
 import { TaskMode } from "@/types";
 import { ws } from "@/lib/socket";
 import { qc } from "@/lib/api";
-// import { sfx } from "@/lib/sfx";
+import { sfx } from "@/lib/sfx";
 
 type PRSProviderProps = {
   children: React.ReactNode;
@@ -33,20 +33,22 @@ const initialState: PRSProviderState = {
 
 const PRSProviderContext = React.createContext<PRSProviderState>(initialState);
 
-export function PRSProvider({ children, ...props }: PRSProviderProps) {
-  const [online, setOnline] = React.useState<boolean>(true);
-  const [wsOpen, setWsOpen] = React.useState<boolean>(false);
+export function PRSProvider({ children }: PRSProviderProps) {
+  const [online, setOnline] = React.useState<boolean>(false);
   const [currentTaskId, setCurrentTaskId] = React.useState<string>("");
   const [currentMode, setCurrentMode] = React.useState<Exclude<TaskMode, TaskMode.EDIT>>(TaskMode.DEFAULT);
   const [currentTaskIndex, setCurrentTaskIndex] = React.useState<number>(0);
 
-  const revalidateContext = () => {
+  const revalidateContext: PRSProviderState["revalidateContext"] = () => {
     ws.dispatch(["getContext"]);
   };
 
-  const revalidateContextEvent: RevalidateContextEvent = (ctx) => {
-    // todo: insure args are not null
-    //? play sound on confirm?
+  const revalidateContextEvent: RevalidateContextEvent = ({ ctx, trigger }) => {
+    if (typeof trigger !== "undefined") {
+      if (trigger === "moveIndex") sfx.select.play();
+      if (trigger === "confirm-default") sfx.complete().play();
+      if (trigger === "confirm-delete") sfx.delete().play();
+    }
     setCurrentTaskId(ctx.currentId as string);
     setCurrentTaskIndex(ctx.currentIndex as number);
     setCurrentMode(ctx.mode as Exclude<TaskMode, TaskMode.EDIT>);
@@ -67,25 +69,14 @@ export function PRSProvider({ children, ...props }: PRSProviderProps) {
       const data = JSON.parse(e.data);
       const [event, args] = data as [
         keyof ServerToClientEvents,
-        ServerToClientEvents[keyof ServerToClientEvents]["arguments"],
+        UnionToIntersection<Parameters<ServerToClientEvents[keyof ServerToClientEvents]>[number]>
       ];
 
       if (event in events) events[event](args);
     } catch (err) {
-      // invalid json (just message?)
       console.log(e.data);
     }
   };
-
-  ws.addEventListener("open", () => {
-    setWsOpen(true);
-    ws.addEventListener("close", () => setWsOpen(false));
-  });
-
-  // todo: remove when testing with physical system
-  React.useEffect(() => {
-    setOnline(wsOpen); // will need to change to detect physical system not just server
-  }, [wsOpen]);
 
   const value: PRSProviderState = {
     online,
@@ -98,11 +89,7 @@ export function PRSProvider({ children, ...props }: PRSProviderProps) {
     revalidateContext,
   };
 
-  return (
-    <PRSProviderContext.Provider {...props} value={value}>
-      {children}
-    </PRSProviderContext.Provider>
-  );
+  return <PRSProviderContext.Provider value={value}>{children}</PRSProviderContext.Provider>;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
