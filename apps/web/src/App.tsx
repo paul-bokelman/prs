@@ -78,7 +78,7 @@ const App: React.FC<Props> = () => {
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <span className={cn({ "text-muted-foreground": dayjs(date).isSame(dayjs(), "day") }, "text-sm")}>
-                {dayjs(date).format("MMM DD")}
+                {dayjs(date).format("ddd, MMM DD")}
               </span>
               <Button variant="outline" size="icon" onClick={() => changeQueryDate("increment")}>
                 <ChevronRight className="h-4 w-4" />

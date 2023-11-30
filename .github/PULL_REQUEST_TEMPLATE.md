@@ -1,8 +1,8 @@
-# Epic Title
+## Description
 
-Ticket: [epic: EPIC_TITLE](#0)
+Lorem ipsum
 
-## Changes made
+## Changes
 
 - made this
 - did that
