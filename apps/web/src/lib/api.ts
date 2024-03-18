@@ -1,7 +1,6 @@
 import axios from "axios";
 import { ControllerConfig, GetDay, DeleteTask, UpdateTask, CreateTask } from "prs-common";
 import { QueryClient } from "react-query";
-// import dayjs from "dayjs";
 
 export const qc = new QueryClient();
 

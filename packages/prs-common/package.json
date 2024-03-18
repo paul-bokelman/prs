@@ -4,9 +4,7 @@
   "license": "MIT",
   "main": "./index.ts",
   "types": "./index.ts",
-  "scripts": {
-    "gen": "ts-node ./scripts/gen.ts"
-  },
+  "scripts": {},
   "dependencies": {
     "http-status-codes": "^2.3.0"
   },

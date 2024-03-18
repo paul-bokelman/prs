@@ -55,7 +55,7 @@ export const CreateTaskDialog: React.FC<Props> = ({ open, close }) => {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema.omit({ day: true })),
-    defaultValues: { description: "", complete: false, reoccurring: false },
+    defaultValues: { description: "", complete: false },
   });
 
   const validSubmission: SubmitHandler<FormValues> = async (data) => {

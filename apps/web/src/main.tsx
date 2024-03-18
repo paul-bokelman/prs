@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClientProvider } from "react-query";
-import App from "./app.tsx";
+import App from "./App.tsx";
 import "./styles/globals.css";
 import { ThemeProvider, PRSProvider } from "@/components/";
 import { Toaster } from "@/components/ui";

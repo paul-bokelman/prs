@@ -74,7 +74,16 @@ export const Task: React.FC<Props> = ({ mode, selected, ...task }) => {
         <div className="grid grid-cols-2 items-center">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="scroll-m-20 text-lg font-semibold tracking-tight">{description}</h3>
+              <h3 className="scroll-m-20 text-lg tracking-tight">
+                {description.includes(":") ? (
+                  <>
+                    <span className="rounded-sm font-normal text-muted-foreground">{description.split(":")[0]}</span>
+                    <span className="font-semibold">{description.split(":")[1]}</span>
+                  </>
+                ) : (
+                  <span className="font-semibold">{description}</span>
+                )}
+              </h3>
             </div>
             <p className="leading-7 text-muted-foreground text-xs">
               {new Date().toDateString()} •{" "}

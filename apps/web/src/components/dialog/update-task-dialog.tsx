@@ -49,7 +49,7 @@ export const UpdateTaskDialog: React.FC<Props> = ({ task, open, close }) => {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { description: task.description, complete: false, reoccurring: false, dayId: undefined },
+    defaultValues: { description: task.description, complete: false, dayId: undefined },
   });
 
   const validSubmission: SubmitHandler<FormValues> = async (data) => {

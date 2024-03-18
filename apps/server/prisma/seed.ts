@@ -1,39 +1,71 @@
-import { PrismaClient, Day, Task } from "@prisma/client";
+import * as fs from "fs";
+import * as path from "path";
+import { PrismaClient, Day, Task, Prisma } from "@prisma/client";
 import dayjs from "dayjs";
-import { faker } from "@faker-js/faker";
+import { parse } from "csv-parse";
 import { context } from "../src/lib";
-const prisma = new PrismaClient();
 
-type CreateTaskArgs = Omit<Task, "id" | "createdAt" | "updatedAt">;
+const prisma = new PrismaClient();
 
 (async () => {
   try {
     await prisma.task.deleteMany();
     await prisma.day.deleteMany();
 
-    let days: Day[] = [];
+    const prevDaysDataPath = path.resolve(__dirname, "./data/prev-prs-days.csv");
+    const prevTasksDataPath = path.resolve(__dirname, "./data/prev-prs-tasks.csv");
 
-    for (let i = -3; i < 3; i++) {
-      const date = dayjs().add(i, "day").toDate();
-      days.push(await prisma.day.create({ data: { date } }));
-    }
+    const prevDaysData = fs.readFileSync(prevDaysDataPath, { encoding: "utf-8" });
+    const prevTasksData = fs.readFileSync(prevTasksDataPath, { encoding: "utf-8" });
 
-    for (const day of days) {
-      const tasks: Array<CreateTaskArgs> = [];
+    const days = await new Promise<Array<Prisma.DayCreateManyInput>>((resolve, reject) => {
+      const days: Array<Prisma.DayCreateManyInput> = [];
+      parse(prevDaysData, { delimiter: ",", columns: ["id", "date", "createdAt", "updatedAt"] }, (e, data: Day[]) => {
+        if (e) throw reject(e);
+        for (let { id, date, createdAt, updatedAt } of data) {
+          days.push({
+            id,
+            date: dayjs(date).toDate(),
+            createdAt: dayjs(createdAt).toDate(),
+            updatedAt: dayjs(updatedAt).toDate(),
+          });
+        }
+        resolve(days);
+      });
+    });
 
-      for (let i = 0; i < 5; i++) {
-        const task: CreateTaskArgs = {
-          description: faker.lorem.words(3),
-          reoccurring: faker.datatype.boolean(),
-          dayId: day.id,
-          complete: faker.datatype.boolean(),
-        };
+    const tasks = await new Promise<Array<Prisma.TaskCreateManyInput>>((resolve, reject) => {
+      const tasks: Array<Prisma.TaskCreateManyInput> = [];
+      parse(
+        prevTasksData,
+        {
+          delimiter: ",",
+          columns: ["id", "description", "complete", "reoccurring", "dayId", "createdAt", "updatedAt"],
+        },
+        (
+          e,
+          // stupid hack due to postgres exporting boolean as t/f... WHY ???
+          data: (Omit<Task, "day" | "complete" | "reoccurring"> & {
+            complete: string;
+            reoccurring: string;
+          })[]
+        ) => {
+          if (e) throw reject(e);
+          for (let { complete, reoccurring, createdAt, updatedAt, ...task } of data) {
+            tasks.push({
+              complete: complete === "t" ? true : false,
+              createdAt: dayjs(createdAt).toDate(),
+              updatedAt: dayjs(updatedAt).toDate(),
+              ...task,
+            });
+          }
+          resolve(tasks);
+        }
+      );
+    });
 
-        tasks.push(task);
-      }
-
-      await prisma.task.createMany({ data: tasks });
-    }
+    await prisma.day.createMany({ data: days });
+    await prisma.task.createMany({ data: tasks });
 
     // await context.destroy();
     await prisma.$disconnect();

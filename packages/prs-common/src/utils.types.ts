@@ -2,6 +2,7 @@ import type { ReasonPhrases } from "http-status-codes";
 import type { RequestHandler } from "express";
 import type { ServerToClientEvents } from "./socket.types";
 import * as ws from "ws";
+import * as z from "zod";
 
 export interface PRSContext {
   currentDayId: string;
@@ -26,6 +27,13 @@ export type ControllerConfig = {
 };
 
 export type Controller<C extends ControllerConfig> = RequestHandler<C["params"], C["payload"], C["body"], C["query"]>;
+
+export type ToControllerConfig<S extends z.AnyZodObject, P = ControllerConfig["payload"]> = {
+  params: z.infer<S>["params"];
+  body: z.infer<S>["body"];
+  query: z.infer<S>["query"];
+  payload: P;
+};
 
 export interface ExtWebSocket extends ws {
   identifier?: string; // your custom property

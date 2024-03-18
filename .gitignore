@@ -39,3 +39,4 @@ apps/server/context.json
 # hardware
 .vscode
 hardware/environment.h
+*.csv
