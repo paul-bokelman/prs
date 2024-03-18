@@ -15,3 +15,7 @@ Replaced 100K resistors on left and right buttons with 100R resistors to resolve
 ![h1](https://github.com/paul-bokelman/prs/assets/72945168/1b668587-a9b9-4dea-b4e0-fa8ea14f3954)
 
 Related: [#12](https://github.com/paul-bokelman/prs/issues/12)
+
+## [Mar. 17 2024] Minor bug fixes
+
+Changed port to match server port change.
