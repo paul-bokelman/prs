@@ -4,7 +4,7 @@ A physical reward system based on the principle of classical conditioning.
 
 ## Project motivation
 
-I wanted a good and efficient todo application but I also wanted to mess with a micro-controller that I had laying around.
+I wanted a good and efficient todo application, but I also wanted to mess with a micro-controller that I had laying around.
 
 ## In Action
 
@@ -22,7 +22,9 @@ https://github.com/paul-bokelman/prs/assets/72945168/78815b88-769b-4055-90be-8d0
 
 ## How it works
 
-The system is composed of a react website, an express server, and a micro-controller. The micro-controller is connected to a few buttons and LED's that each dispatch different events through a websocket to the server. The server then broadcasts the event to all connected clients. The clients then update their state and display the new state to the user. With the system you can move through the current tasks and mark them as completed without ever having to touch your computer. In order to stimulate the user to provide incentive to complete the tasks, the system uses a combination of a big red arcade button and a randomized retro completion sound to provide a sense of accomplishment.
+The system comprises a React website, an Express server, and a micro-controller. Connected to the micro-controller are several buttons and LEDs, each triggering distinct events sent through a WebSocket to the server. Subsequently, the server broadcasts these events to all connected clients, which then update their state and present the new state to the user. With this setup, users can progress through their current tasks and mark them as completed without needing to interact directly with their computer.
+
+To motivate users and incentivize task completion, the system employs a combination of a large red arcade button and a randomly selected retro completion sound. This approach aims to instill a sense of accomplishment and encourage users to stay engaged with their tasks.
 
 ## The Hardware
 
