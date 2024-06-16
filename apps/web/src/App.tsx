@@ -1,21 +1,23 @@
+import type { ImportRoutine, ServerError } from "prs-common";
 import { TaskMode } from "@/types";
 import * as React from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useQuery } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import cn from "clsx";
 import dayjs from "dayjs";
-import { Plus, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, ArrowRight, ChevronLeft, ChevronRight, ArrowBigDownDash } from "lucide-react";
 import { Task } from "@/components";
-import { Button, Tabs, TabsList, TabsTrigger } from "@/components/ui";
+import { Button, Tabs, TabsList, TabsTrigger, useToast } from "@/components/ui";
 import { CreateTaskDialog } from "@/components/dialog";
-import { api } from "@/lib/api";
+import { api, qc } from "@/lib/api";
 import { sfx } from "@/lib/sfx";
 import { usePRS, Countdown } from "@/components";
 
 interface Props {}
 
 const App: React.FC<Props> = () => {
-  const { online, currentTaskIndex } = usePRS();
+  const { online, currentTaskIndex, revalidateContext } = usePRS();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [params] = useSearchParams(location.search);
   const [taskMode, setTaskMode] = React.useState<TaskMode>(TaskMode.DEFAULT);
@@ -24,6 +26,18 @@ const App: React.FC<Props> = () => {
   const date = params.get("date");
 
   const { data: day, status } = useQuery(["currentDay", date], () => api.days.get(date as string));
+
+  const importRoutine = useMutation<ImportRoutine["payload"], ServerError, string>({
+    mutationFn: (id) => api.days.routine(id),
+    onSuccess: () => {
+      revalidateContext();
+      qc.invalidateQueries(["currentDay", date]);
+      toast({ title: "Routine imported" });
+    },
+    onError: () => {
+      toast({ title: "Failed to import routine", variant: "destructive" });
+    },
+  });
 
   const closeCreateDialog = () => setCreateDialogOpen(false);
 
@@ -64,6 +78,10 @@ const App: React.FC<Props> = () => {
           <div className="flex items-center gap-2">
             <Button variant="outline" size="icon" onClick={() => setCreateDialogOpen(true)}>
               <Plus className="h-4 w-4" />
+            </Button>
+
+            <Button variant="outline" size="icon" onClick={() => importRoutine.mutate(day!.id)}>
+              <ArrowBigDownDash className="h-4 w-4" />
             </Button>
 
             <Tabs defaultValue="default" onValueChange={changeTaskMode} className="w-auto">
