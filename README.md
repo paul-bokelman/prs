@@ -1,4 +1,4 @@
-# Physical Reward System (WIP)
+# Physical Reward System
 
 A physical reward system based on the principle of classical conditioning.
 
